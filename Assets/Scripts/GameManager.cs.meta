@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 5764b9b8b71771047ac01530b184ac73
+timeCreated: 1440814213
+licenseType: Free
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - humanForm: {fileID: 125354, guid: d77acf7f09b7c13439e88fdeada4ab4b, type: 2}
+  - foxForm: {fileID: 123738, guid: 0d662ab67899a464ab855308320ce987, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
