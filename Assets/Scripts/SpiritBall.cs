@@ -25,6 +25,18 @@ public class SpiritBall : MonoBehaviour
 
     // Object Variables
     private Vector3 target;
+    private bool damageable;
+
+    private void OnCollisionEnter(Collision other)
+    {
+        if (damageable && other.gameObject.tag != "Player")
+        {
+            if (other.gameObject.tag == "Enemy")
+                other.gameObject.SendMessage("TakeDamage", 1);
+
+            Destroy(gameObject);
+        }
+    }
 
     private void Shoot()
     {
@@ -37,6 +49,9 @@ public class SpiritBall : MonoBehaviour
 
         rb.velocity = force * Time.deltaTime * velocityMultiplier;
         //rb.MovePosition(target);
+
+        damageable = true;
+
         StartCoroutine(UntilTarget());
     }
 

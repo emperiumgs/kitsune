@@ -7,8 +7,7 @@ public class FoxForm : AbstractPlayer
 {
     // Customizeable Variables
     [Header("Fox Variables")]
-    [SerializeField]
-    private GameObject spiritBallPrefab;
+    public GameObject spiritBallPrefab;
     [SerializeField]
     private Vector3 spiritSlotHeight;
     [SerializeField]
@@ -19,14 +18,9 @@ public class FoxForm : AbstractPlayer
     public float spiritRespawnTime = 1;
 
     // Reference Variables
-    // TODO: Fix spirit ball positions, relative to local space, and fix attack conditions
-    private Vector3 pos
-    {
-        get { return transform.position; }
-    }
     private Vector3 spiritSlotBase
     {
-        get { return pos + transform.TransformDirection(spiritSlotHeight); }
+        get { return transform.position + transform.TransformDirection(spiritSlotHeight); }
     }
     private Vector3 spiritSlotLeft
     {
@@ -62,8 +56,6 @@ public class FoxForm : AbstractPlayer
     private void OnEnable()
     {
         AddSpiritBall();
-        AddSpiritBall();
-        AddSpiritBall();
     }
 
     private void AddSpiritBall()
@@ -80,7 +72,6 @@ public class FoxForm : AbstractPlayer
 
     private void RepositionSpiritBalls()
     {
-        Vector3 pos = transform.position;
         switch (spiritBalls.Count)
         {
             case 1:

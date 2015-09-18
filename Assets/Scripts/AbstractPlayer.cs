@@ -325,6 +325,11 @@ public abstract class AbstractPlayer : AbstractMultiWorld
         }
     }
 
+    protected virtual void TakeDamage(int amount)
+    {
+        print("Took " + amount + " damage");
+    }
+
     /// <summary>
     /// Prevents player from moving, and starts the world transition
     /// </summary>
