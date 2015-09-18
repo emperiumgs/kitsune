@@ -37,4 +37,7 @@ Assets/Materials/
 Assets/Models/
 Assets/Standard Assets/
 Assets/Textures/
-Assets/*.meta
+Assets/Materials.meta
+Assets/Models.meta
+Assets/Standard Assets.meta
+Assets/Textures.meta
