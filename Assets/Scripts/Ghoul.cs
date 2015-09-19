@@ -56,12 +56,16 @@ public class Ghoul : AbstractMultiWorld
     {
         get { return transform.FindChild("Arm").GetComponent<MeshRenderer>(); }
     }
+    private MeshRenderer[] renderers
+    {
+        get { return GetComponentsInChildren<MeshRenderer>(true); }
+    }
     // </Prototype Purposes>
 
     // Object Variables
     private State state;
     private Vector3 initialPoint;
-    
+
     private void Awake()
     {
         initialPoint = transform.position;
@@ -73,7 +77,7 @@ public class Ghoul : AbstractMultiWorld
     /// </summary>
     private void OnTriggerStay(Collider other)
     {
-        if (state < State.Chasing && other.tag == "Player")
+        if (spiritRealm && state < State.Chasing && other.tag == "Player")
         {
             Vector3 direction = other.transform.position - transform.position;
             float angle = Vector3.Angle(direction, transform.forward);
@@ -91,21 +95,29 @@ public class Ghoul : AbstractMultiWorld
 
     private void OnTriggerExit(Collider other)
     {
-        if (state == State.Chasing && other.tag == "Player")
+        if (spiritRealm && state == State.Chasing && other.tag == "Player")
             StartCoroutine(Search(other.transform));
     }
 
     /// <summary>
-    /// Deals the amount of damage to this object
+    /// Deals damage to this object and tells where the damage came from
     /// </summary>
-    /// <param name="amount">The amount of damage recieved</param>
-    private void TakeDamage(int amount)
+    /// <param name="location">The location where the damage were inflicted</param>
+    private void TakeDamage(Vector3 location)
     {
         if (health >= 0)
         {
-            health -= amount;
+            health --;
             if (health == 0)
                 StartCoroutine(Die());
+            else
+            {
+                if (state < State.Searching)
+                {
+                    state = State.Wandering;
+                    nav.destination = location;
+                }                    
+            }
 ;        }
     }
 
@@ -122,7 +134,10 @@ public class Ghoul : AbstractMultiWorld
             if (attackCol.bounds.Intersects(targetCol.bounds) && Vector3.Distance(transform.position, target.position) < attackDistance)
                 StartCoroutine(Attack(target.gameObject));
             else
-                nav.destination = target.position;        
+            {
+                if (!nav.isOnOffMeshLink)
+                    nav.SetDestination(target.position);
+            } 
             yield return null;
         }
     }
@@ -138,13 +153,14 @@ public class Ghoul : AbstractMultiWorld
         while(state == State.Searching && time < searchTime)
         {
             time += Time.deltaTime;
-            nav.destination = target.position;
+            if (!nav.isOnOffMeshLink)
+                nav.SetDestination(target.position);
             yield return null;
         }
 
         if (state == State.Searching)
         {
-            nav.destination = transform.position;
+            nav.SetDestination(transform.position);
             yield return new WaitForSeconds(searchTime);
             StartCoroutine(Wander(initialPoint));
         }
@@ -156,7 +172,7 @@ public class Ghoul : AbstractMultiWorld
     private IEnumerator Wander(Vector3 target)
     {
         state = State.Wandering;
-        nav.destination = target;
+        nav.SetDestination(target);
         while(state == State.Wandering && Vector3.Distance(transform.position, target) > 0.1f)
             yield return null;
 
@@ -211,10 +227,12 @@ public class Ghoul : AbstractMultiWorld
         armMesh.material.color = initColor;
     }
 
+    /// <summary>
+    /// Controls the dying phase of the entity
+    /// </summary>
     private IEnumerator Die()
     {
         state = State.Dying;
-        //float time = 0;
         Renderer rend = GetComponentInChildren<Renderer>();
         Color color = rend.material.color;
         while(color.a > 0)
@@ -243,11 +261,38 @@ public class Ghoul : AbstractMultiWorld
 
     protected override void InitToggleWorlds()
     {
-        print("Toggling");
+        base.InitToggleWorlds();
+        StartCoroutine(OnToggleWorlds());
+    }
+
+    protected override void AbortToggleWorlds()
+    {
+        base.AbortToggleWorlds();
+        StopCoroutine(OnToggleWorlds());        
     }
 
     protected override void ToggleWorlds()
     {
+        base.ToggleWorlds();
+
         print("Toggled");
+
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            renderers[i].enabled = spiritRealm;
+        }
+    }
+
+    private IEnumerator OnToggleWorlds()
+    {
+        float time = 0;
+        while(onTransition && time < transitionTime)
+        {
+            time += Time.deltaTime;
+            yield return null;
+        }
+
+        if (onTransition)
+            ToggleWorlds();
     }
 }

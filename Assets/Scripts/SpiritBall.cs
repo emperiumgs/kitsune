@@ -6,8 +6,7 @@ public class SpiritBall : MonoBehaviour
 {
     // Customizeable Variables
     [Range(125, 225)]
-    [SerializeField]
-    private int velocityMultiplier = 180;
+    public int velocityMultiplier = 180;
 
     // Reference Variables
     private Rigidbody rb
@@ -32,7 +31,7 @@ public class SpiritBall : MonoBehaviour
         if (damageable && other.gameObject.tag != "Player")
         {
             if (other.gameObject.tag == "Enemy")
-                other.gameObject.SendMessage("TakeDamage", 1);
+                other.gameObject.SendMessage("TakeDamage", transform.position);
 
             Destroy(gameObject);
         }

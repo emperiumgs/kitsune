@@ -3,8 +3,6 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     private static GameManager m_Instance;
-    private static bool onTransition;
-
     public static GameManager instance
     {
         get
@@ -18,33 +16,11 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public static float transitionTime = 1.5f;
-
     // Customizeable Variables
     [SerializeField]
     private GameObject humanPrefab;
-    [SerializeField]
-    private GameObject foxPrefab;
 
     // Reference Variables
-    private Camera cam
-    {
-        get { return Camera.main; }
-    }
-    private Transform camPivot
-    {
-        get { return cam.transform.parent; }
-    }
-    private GameObject camRig
-    {
-        get { return camPivot.parent.gameObject; }
-    }
-    private GameObject human;
-    private GameObject fox;
-    private AbstractPlayer player(GameObject origin)
-    {
-        return origin.GetComponent<AbstractPlayer>();
-    }
     private AbstractMultiWorld[] multiWorld
     {
         get { return FindObjectsOfType<AbstractMultiWorld>(); }
@@ -63,17 +39,25 @@ public class GameManager : MonoBehaviour
                 Destroy(gameObject);
         }
 
-        fox = Instantiate(foxPrefab);
-        human = Instantiate(humanPrefab);
-        player(fox).otherForm = human;
-        player(human).otherForm = fox;
+        GameObject human = Instantiate(humanPrefab);
     }
 
-    private void BroadcastToggleWorlds()
+    private void Update()
     {
-        for (int i = 0; i < multiWorld.Length; i++)
+        if (Input.GetKeyDown(KeyCode.T))
+            BroadcastToggleWorlds("AbortToggleWorlds");
+    }
+
+    /// <summary>
+    /// Broadcasts a ToggleWorlds Event to all Multi-World objects
+    /// </summary>
+    /// <param name="eventName">InitToggleWorlds if initiating or AbortToggleWorlds if aborting process</param>
+    private void BroadcastToggleWorlds(string eventName)
+    {
+        int max = multiWorld.Length;
+        for (int i = 0; i < max; i++)
         {
-            multiWorld[i].SendMessage("InitToggleWorlds");
+            multiWorld[i].SendMessage(eventName);
         }
     }
 }

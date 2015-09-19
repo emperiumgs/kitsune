@@ -1,27 +1,21 @@
+using System.Collections;
 using UnityEngine;
 using UnityStandardAssets.ImageEffects;
-using System.Collections;
 
 public class CameraTransitor : AbstractMultiWorld
 {
     // Customizeable Variables
     [Range(0.1f, 5)]
-    [SerializeField]
-    private float bloomTargetIntensity = 0.8f;
+    public float bloomTargetIntensity = 0.8f;
     [Range(0.1f, 3)]
-    [SerializeField]
-    private float bloomTime = 0.5f;
+    public float bloomTime = 0.5f;
     [Range(0.1f, 1)]
-    [SerializeField]
-    private float colorTargetSaturation = 0.6f;
+    public float colorTargetSaturation = 0.6f;
     [Range(0.1f, 1)]
-    [SerializeField]
-    private float targetBlueValue = 0.4f;
+    public float targetBlueValue = 0.4f;
     [Range(0.1f, 1)]
-    [SerializeField]
-    private float targetRedValue = 0.7f;
-    [SerializeField]
-    private float vortexAngle = 20;
+    public float targetRedValue = 0.7f;
+    public float vortexAngle = 20;
 
     // Reference Variables
     private Bloom bloom
@@ -37,12 +31,10 @@ public class CameraTransitor : AbstractMultiWorld
         get { return GetComponent<Vortex>(); }
     }
 
-    // Object Variables
-    private bool soulForm;
-
     protected override void InitToggleWorlds()
     {
-        if (soulForm)
+        base.InitToggleWorlds();
+        if (spiritRealm)
             StartCoroutine(Unsoulify());
         else
         {
@@ -53,24 +45,57 @@ public class CameraTransitor : AbstractMultiWorld
         vortex.enabled = true;
     }
 
-    protected override void ToggleWorlds()
+    protected override void AbortToggleWorlds()
     {
-        StartCoroutine(SmoothBloom(soulForm));
-        if (soulForm)
+        base.AbortToggleWorlds();
+        StopAllCoroutines();
+
+        // Vortex disable
+        vortex.enabled = false;
+        vortex.angle = 0;
+
+        // Color correction curves keyframes
+        Keyframe blueKey = colorCurves.blueChannel.keys[0];
+        Keyframe redKey = colorCurves.redChannel.keys[1];
+
+        // Auxiliar variable
+        int spirit;
+
+        if (spiritRealm)
         {
-            soulForm = false;
-            colorCurves.enabled = false;
+            spirit = 1;        
         }
         else
         {
-            soulForm = true;
+            spirit = 0;
+            bloom.enabled = false;
+            colorCurves.enabled = false;
         }
+
+        // Get back to spirit bloom intensity
+        bloom.bloomIntensity = spirit * bloomTargetIntensity;
+        // Get back to spirit color correction curves values
+        colorCurves.saturation = 1 - spirit * (1 - colorTargetSaturation);
+        blueKey.value = spirit * targetBlueValue;
+        redKey.value = targetRedValue - spirit * (1 - targetRedValue);
+        colorCurves.blueChannel.MoveKey(0, blueKey);
+        colorCurves.redChannel.MoveKey(1, redKey);
+        colorCurves.UpdateParameters();
+    }
+
+    protected override void ToggleWorlds()
+    {
+        StartCoroutine(SmoothBloom(spiritRealm));
+        if (spiritRealm)
+            colorCurves.enabled = false;
+
+        base.ToggleWorlds();
     }
 
     private IEnumerator Soulify()
     {
         float time = 0;
-        float maxTime = GameManager.transitionTime;
+        float maxTime = transitionTime;
         float percentage;
 
         float prevSat = colorCurves.saturation;
@@ -78,35 +103,37 @@ public class CameraTransitor : AbstractMultiWorld
         Keyframe blueKey = colorCurves.blueChannel.keys[0];
         Keyframe redKey = colorCurves.redChannel.keys[1];
 
-        while (time < maxTime)
-        {
-            time += Time.deltaTime;
-            percentage = time / maxTime;
-            // Vortex Effect
-            if (time < maxTime / 2)
-                vortex.angle += Time.deltaTime * vortexAngle;
-            else
-                vortex.angle -= Time.deltaTime * vortexAngle;
-            // Color Correction Curves Effect
-            colorCurves.saturation = prevSat - percentage * (1 - colorTargetSaturation);
-            // Update the blue color curve
-            blueKey.value = percentage * targetBlueValue;
-            redKey.value = 1 - percentage * (1 - targetRedValue);
-            colorCurves.blueChannel.MoveKey(0, blueKey);
-            colorCurves.redChannel.MoveKey(1, redKey);
-            colorCurves.UpdateParameters();
-            // Bloom effect
-            bloom.bloomIntensity = 2 * bloomTargetIntensity * percentage;
-            yield return null;
-        }
+            while (onTransition && time < maxTime)
+            {
+                time += Time.deltaTime;
+                percentage = time / maxTime;
+                // Vortex Effect
+                if (time < maxTime / 2)
+                    vortex.angle += Time.deltaTime * vortexAngle;
+                else
+                    vortex.angle -= Time.deltaTime * vortexAngle;
+                // Color Correction Curves Effect
+                colorCurves.saturation = prevSat - percentage * (1 - colorTargetSaturation);
+                // Update the blue color curve
+                blueKey.value = percentage * targetBlueValue;
+                redKey.value = 1 - percentage * (1 - targetRedValue);
+                colorCurves.blueChannel.MoveKey(0, blueKey);
+                colorCurves.redChannel.MoveKey(1, redKey);
+                colorCurves.UpdateParameters();
+                // Bloom effect
+                bloom.bloomIntensity = 2 * bloomTargetIntensity * percentage;
+                yield return null;
+            }
 
-        ToggleWorlds();
+            if (onTransition)
+                ToggleWorlds();
     }
 
     private IEnumerator Unsoulify()
+
     {
         float time = 0;
-        float maxTime = GameManager.transitionTime;
+        float maxTime = transitionTime;
         float percentage;
         
         float prevSat = colorCurves.saturation;
@@ -116,29 +143,30 @@ public class CameraTransitor : AbstractMultiWorld
 
         float prevBloom = bloom.bloomIntensity;
 
-        while (time < maxTime)
-        {
-            time += Time.deltaTime;
-            percentage = time / maxTime;
-            // Vortex Effect
-            if (time < maxTime / 2)
-                vortex.angle += Time.deltaTime * vortexAngle;
-            else
-                vortex.angle -= Time.deltaTime * vortexAngle;
-            // Color Correction Curves Effect
-            colorCurves.saturation = prevSat + (1 - prevSat) * percentage;
-            // Update blue color curve
-            blueKey.value = targetBlueValue - targetBlueValue * percentage;
-            redKey.value = targetRedValue + percentage * (1 - targetRedValue);
-            colorCurves.blueChannel.MoveKey(0, blueKey);
-            colorCurves.redChannel.MoveKey(1, redKey);
-            colorCurves.UpdateParameters();
-            // Bloom Effect
-            bloom.bloomIntensity = prevBloom + prevBloom * percentage;
-            yield return null;
-        }
+            while (onTransition && time < maxTime)
+            {
+                time += Time.deltaTime;
+                percentage = time / maxTime;
+                // Vortex Effect
+                if (time < maxTime / 2)
+                    vortex.angle += Time.deltaTime * vortexAngle;
+                else
+                    vortex.angle -= Time.deltaTime * vortexAngle;
+                // Color Correction Curves Effect
+                colorCurves.saturation = prevSat + (1 - prevSat) * percentage;
+                // Update blue color curve
+                blueKey.value = targetBlueValue - targetBlueValue * percentage;
+                redKey.value = targetRedValue + percentage * (1 - targetRedValue);
+                colorCurves.blueChannel.MoveKey(0, blueKey);
+                colorCurves.redChannel.MoveKey(1, redKey);
+                colorCurves.UpdateParameters();
+                // Bloom Effect
+                bloom.bloomIntensity = prevBloom + prevBloom * percentage;
+                yield return null;
+            }
 
-        ToggleWorlds();
+            if (onTransition)
+                ToggleWorlds();
     }
 
     private IEnumerator SmoothBloom(bool toZero)

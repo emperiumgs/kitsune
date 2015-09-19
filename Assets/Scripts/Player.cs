@@ -1,131 +1,150 @@
 using UnityEngine;
 using UnityStandardAssets.ImageEffects;
 using System.Collections;
+using System.Collections.Generic;
 using System;
 
-public abstract class AbstractPlayer : AbstractMultiWorld
+public class Player : AbstractMultiWorld
 {
-    // Customizable Variables
+    // Customizeable Variables
     [Header("Player Variables")]
     [SerializeField]
-    protected float movingTurnSpeed = 360;
+    private float movingTurnSpeed = 360;
     [SerializeField]
-    protected float stationaryTurnSpeed = 180;
+    private float stationaryTurnSpeed = 180;
     [SerializeField]
-    protected float jumpPower = 8f;
+    private float jumpPower = 8f;
     [Range(1f, 4f)]
     [SerializeField]
-    protected float gravityMultiplier = 2f;
+    private float gravityMultiplier = 2f;
     [SerializeField]
-    protected float runCycleLegOffset = 0.2f;
+    private float runCycleLegOffset = 0.2f;
     [SerializeField]
-    protected float moveSpeedMultiplier = 1f;
+    private float moveSpeedMultiplier = 1f;
     [SerializeField]
-    protected float animSpeedMultiplier = 1f;
+    private float animSpeedMultiplier = 1f;
     [SerializeField]
-    protected float groundCheckDistance = 0.3f;
+    private float groundCheckDistance = 0.3f;
+    public GameObject barPrefab;
+    public Vector3 foxCamPivotOffset = Vector3.down / 2;
+    public float foxCamOffset = 1.5f;
+    public Vector3 humCamPivotOffset = Vector3.up / 2;
+    public float humCamOffset = 2.5f;
+    // Fox Customizeable Variables
+    [Header("Fox Variables")]
+    public GameObject spiritBallPrefab;
     [SerializeField]
-    protected GameObject barPrefab;
+    private Vector3 spiritSlotHeight;
     [SerializeField]
-    protected Vector3 transCamPivotOffset = Vector3.up / 2;
+    private Vector3 spiritSlotYOffset;
     [SerializeField]
-    protected float transCamOffset = 2.5f;
+    private Vector3 spiritSlotXOffset;
+    [Range(0.5f, 5)]
+    public float spiritRespawnTime = 1;
 
     // Reference Variables (read-only)
-    protected GameManager manager
+    private GameManager manager
     {
         get { return GameManager.instance; }
     }
-    protected Camera cam
+    private Camera cam
     {
         get { return Camera.main; }
     }
-    protected Transform camPivot
+    private Transform camPivot
     {
         get { return cam.transform.parent; }
     }
-    protected GameObject camRig
+    private GameObject camRig
     {
         get { return camPivot.parent.gameObject; }
     }
-    protected Bloom camBloom
+    private Bloom camBloom
     {
         get { return cam.GetComponent<Bloom>(); }
     }
-    protected ColorCorrectionCurves camColor
+    private ColorCorrectionCurves camColor
     {
         get { return cam.GetComponent<ColorCorrectionCurves>(); }
     }
-    protected CapsuleCollider col
+    private CapsuleCollider col
     {
         get { return GetComponent<CapsuleCollider>(); }
     }
-    protected Animator anim
+    private Animator anim
     {
         get { return GetComponent<Animator>(); }
     }
-    protected Rigidbody rb
+    private Rigidbody rb
     {
         get { return GetComponent<Rigidbody>(); }
     }
+    // Fox Reference Variables
+    private Vector3 spiritSlotBase
+    {
+        get { return transform.position + transform.TransformDirection(spiritSlotHeight); }
+    }
+    private Vector3 spiritSlotLeft
+    {
+        get { return spiritSlotBase - transform.TransformDirection(2 * spiritSlotYOffset - spiritSlotXOffset); }
+    }
+    private Vector3 spiritSlotRight
+    {
+        get { return spiritSlotBase - transform.TransformDirection(2 * spiritSlotYOffset + spiritSlotXOffset); }
+    }
 
     // Object Variables
-    protected ProgressBar castingBar;
-    protected Vector3 camForward;
-    protected Vector3 move;
-    protected Vector3 groundNormal;
-    protected Vector3 colCenter;
-    protected bool isGrounded;
-    protected bool isCrouching;
-    protected bool inTransition;
-    protected bool inactive;
-    protected bool jump;
-    protected float colHeight;
-    protected float origGroundCheckDist;
-    protected float turnAmount;
-    protected float forwardAmount;
+    private ProgressBar castingBar;
+    private Vector3 camForward;
+    private Vector3 move;
+    private Vector3 groundNormal;
+    private bool isGrounded;
+    private bool inactive;
+    private bool jump;
+    private float origGroundCheckDist;
+    private float turnAmount;
+    private float forwardAmount;
+    // Fox Variables
+    private List<GameObject> spiritBalls = new List<GameObject>();
 
     // Public Object variables
     public bool grounded
     {
         get { return isGrounded; }
     }
-    public bool crouching
-    {
-        get { return isCrouching; }
-    }
-    [HideInInspector]
-    public GameObject otherForm;
 
-    protected virtual void Awake()
+    private void Awake()
     {
-        colHeight = col.height;
-        colCenter = col.center;
         origGroundCheckDist = groundCheckDistance;
     }
 
-    protected virtual void Update()
+    private void Update()
     {
         if (!inactive)
         {
             if (!jump)
                 jump = Input.GetButtonDown("Jump");
 
-            if (!isCrouching && isGrounded && !inTransition && Input.GetButtonDown("Toggle Worlds"))
+            if (isGrounded && !onTransition && Input.GetButtonDown("Toggle Worlds"))
             {
-                manager.SendMessage("BroadcastToggleWorlds");
+                manager.SendMessage("BroadcastToggleWorlds", "InitToggleWorlds");
+            }
+
+            if (spiritRealm)
+            {
+                if (spiritBalls.Count > 0 && Input.GetButtonDown("Attack"))
+                    ShootSpiritBall();
             }
         }
     }
 
-    protected virtual void FixedUpdate()
+    private void FixedUpdate()
     {
         if (!inactive)
         {
             // read inputs
             float h = Input.GetAxis("Horizontal");
             float v = Input.GetAxis("Vertical");
-            bool crouch = Input.GetKey(KeyCode.C);
 
             // calculate move direction to pass to character
             if (cam != null)
@@ -144,16 +163,16 @@ public abstract class AbstractPlayer : AbstractMultiWorld
             if (Input.GetKey(KeyCode.LeftShift)) move *= 0.5f;
 
             // pass all parameters to the character control script
-            Move(move, crouch, jump);
+            Move(move, jump);
             jump = false;
         }
         else
         {
-            Move(Vector3.zero, false, false);
+            Move(Vector3.zero, false);
         }
     }
 
-    protected void Move(Vector3 move, bool crouch, bool jump)
+    private void Move(Vector3 move, bool jump)
     {
         // convert the world relative moveInput vector into a local-relative
         // turn amount and forward amount required to head in the desired
@@ -170,64 +189,22 @@ public abstract class AbstractPlayer : AbstractMultiWorld
         // control and velocity handling is different when grounded and airborne:
         if (isGrounded)
         {
-            HandleGroundedMovement(crouch, jump);
+            HandleGroundedMovement(jump);
         }
         else
         {
             HandleAirborneMovement();
         }
 
-        ScaleCapsuleForCrouching(crouch);
-        PreventStandingInLowHeadroom();
-
         // send input and other state parameters to the animator
         UpdateAnimator(move);
     }
 
-    protected void ScaleCapsuleForCrouching(bool crouch)
-    {
-        if (isGrounded && crouch)
-        {
-            if (isCrouching) return;
-            col.height /= 2;
-            col.center /= 2;
-            isCrouching = true;
-        }
-        else
-        {
-            Ray crouchRay = new Ray(rb.position + Vector3.up * col.radius / 2, Vector3.up);
-            float crouchRayLength = colHeight - col.radius / 2;
-            if (Physics.SphereCast(crouchRay, col.radius / 2, crouchRayLength))
-            {
-                isCrouching = true;
-                return;
-            }
-            col.height = colHeight;
-            col.center = colCenter;
-            isCrouching = false;
-        }
-    }
-
-    protected void PreventStandingInLowHeadroom()
-    {
-        // prevent standing up in crouch-only zones
-        if (!isCrouching)
-        {
-            Ray crouchRay = new Ray(rb.position + Vector3.up * col.radius / 2, Vector3.up);
-            float crouchRayLength = colHeight - col.radius / 2;
-            if (Physics.SphereCast(crouchRay, col.radius / 2, crouchRayLength))
-            {
-                isCrouching = true;
-            }
-        }
-    }
-
-    protected virtual void UpdateAnimator(Vector3 move)
+    private void UpdateAnimator(Vector3 move)
     {
         // update the animator parameters
         anim.SetFloat("Forward", forwardAmount, 0.1f, Time.deltaTime);
         anim.SetFloat("Turn", turnAmount, 0.1f, Time.deltaTime);
-        anim.SetBool("Crouch", isCrouching);
         anim.SetBool("OnGround", isGrounded);
         if (!isGrounded)
         {
@@ -259,7 +236,7 @@ public abstract class AbstractPlayer : AbstractMultiWorld
         }
     }
 
-    protected void HandleAirborneMovement()
+    private void HandleAirborneMovement()
     {
         // apply extra gravity from multiplier:
         Vector3 extraGravityForce = (Physics.gravity * gravityMultiplier) - Physics.gravity;
@@ -268,10 +245,10 @@ public abstract class AbstractPlayer : AbstractMultiWorld
         groundCheckDistance = rb.velocity.y < 0 ? origGroundCheckDist : 0.01f;
     }
 
-    protected void HandleGroundedMovement(bool crouch, bool jump)
+    private void HandleGroundedMovement(bool jump)
     {
         // check whether conditions are right to allow a jump:
-        if (jump && !crouch && anim.GetCurrentAnimatorStateInfo(0).IsName("Grounded"))
+        if (jump && anim.GetCurrentAnimatorStateInfo(0).IsName("Grounded"))
         {
             // jump!
             rb.velocity = new Vector3(rb.velocity.x, jumpPower, rb.velocity.z);
@@ -281,14 +258,14 @@ public abstract class AbstractPlayer : AbstractMultiWorld
         }
     }
 
-    protected void ApplyExtraTurnRotation()
+    private void ApplyExtraTurnRotation()
     {
         // help the character turn faster (this is in addition to root rotation in the animation)
         float turnSpeed = Mathf.Lerp(stationaryTurnSpeed, movingTurnSpeed, forwardAmount);
         transform.Rotate(0, turnAmount * turnSpeed * Time.deltaTime, 0);
     }
 
-    protected void CheckGroundStatus()
+    private void CheckGroundStatus()
     {
         RaycastHit hitInfo;
 #if UNITY_EDITOR
@@ -311,7 +288,7 @@ public abstract class AbstractPlayer : AbstractMultiWorld
         }
     }
 
-    protected void OnAnimatorMove()
+    private void OnAnimatorMove()
     {
         // we implement this function to override the default root motion.
         // this allows us to modify the positional speed before it's applied.
@@ -325,9 +302,87 @@ public abstract class AbstractPlayer : AbstractMultiWorld
         }
     }
 
-    protected virtual void TakeDamage(int amount)
+    /// <summary>
+    /// Inflicts the specified amount of damage
+    /// </summary>
+    /// <param name="amount">The amount of damage to inflict</param>
+    private void TakeDamage(int amount)
     {
+        if (onTransition)
+        {
+            manager.SendMessage("BroadcastToggleWorlds", "AbortToggleWorlds");
+        }
         print("Took " + amount + " damage");
+    }
+
+    /// <summary>
+    /// Adds a new spirit ball on the object
+    /// </summary>
+    private void AddSpiritBall()
+    {
+        GameObject spiritBall = Instantiate(spiritBallPrefab);
+        spiritBalls.Add(spiritBall);
+
+        int i = spiritBalls.IndexOf(spiritBall);
+        spiritBalls[i].transform.parent = transform;
+        spiritBalls[i].transform.rotation = transform.rotation;
+
+        RepositionSpiritBalls();
+    }
+
+    /// <summary>
+    /// Reposition all spirit balls according to their quantity
+    /// </summary>
+    private void RepositionSpiritBalls()
+    {
+        switch (spiritBalls.Count)
+        {
+            case 1:
+                spiritBalls[0].transform.position = spiritSlotBase;
+                break;
+            case 2:
+                spiritBalls[0].transform.position = spiritSlotLeft + spiritSlotYOffset;
+                spiritBalls[1].transform.position = spiritSlotRight + spiritSlotYOffset;
+                break;
+            case 3:
+                spiritBalls[0].transform.position = spiritSlotLeft;
+                spiritBalls[1].transform.position = spiritSlotRight;
+                spiritBalls[2].transform.position = spiritSlotBase;
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Shoots the spirit ball forward
+    /// </summary>
+    private void ShootSpiritBall()
+    {
+        GameObject shooterBall = spiritBalls[spiritBalls.Count - 1];
+        spiritBalls.Remove(shooterBall);
+        shooterBall.SendMessage("Shoot");
+
+        RepositionSpiritBalls();
+        StartCoroutine(RespawnSpiritBall());
+    }
+
+    /// <summary>
+    /// Respawns a spirit ball after its respawn time
+    /// </summary>
+    private IEnumerator RespawnSpiritBall()
+    {
+        yield return new WaitForSeconds(spiritRespawnTime);
+
+        AddSpiritBall();
+    }
+
+    /// <summary>
+    /// Ends the transition process, by returning properties to their earlier states
+    /// </summary>
+    private void EndTransition()
+    {
+        rb.isKinematic = false;
+        Destroy(castingBar.gameObject);
+        inactive = false;
     }
 
     /// <summary>
@@ -335,7 +390,7 @@ public abstract class AbstractPlayer : AbstractMultiWorld
     /// </summary>
     protected override void InitToggleWorlds()
     {
-        inTransition = true;
+        base.InitToggleWorlds();
         inactive = true;
         forwardAmount = 0;
         turnAmount = 0;
@@ -346,41 +401,77 @@ public abstract class AbstractPlayer : AbstractMultiWorld
     }
 
     /// <summary>
+    /// Aborts the world transition process
+    /// </summary>
+    protected override void AbortToggleWorlds()
+    {
+        base.AbortToggleWorlds();
+        EndTransition();
+        StopCoroutine(OnToggleWorlds());        
+    }
+
+    /// <summary>
     /// Finishes the world transition process
     /// </summary>
     protected override void ToggleWorlds()
     {
-        if (otherForm != null)
+        Vector3 camPivotOffset;
+        float camOffset;
+
+        // Toggle the active body
+        if (spiritRealm)
         {
-            otherForm.transform.position = transform.position;
-            otherForm.transform.rotation = transform.rotation;
-            gameObject.SetActive(false);
-            otherForm.SetActive(true);
+            // Prototyping purposes
+            transform.localScale = Vector3.one;
+
+            for (int i = 0; i < spiritBalls.Count; i++)
+                Destroy(spiritBalls[i].gameObject);
+
+            spiritBalls.Clear();
+
+            // Camera adjustment
+            camPivotOffset = humCamPivotOffset;
+            camOffset = humCamOffset;                       
+        }
+        else
+        {
+            // Prototyping purposes
+            transform.localScale = Vector3.one / 2;
+
+            // Camera adjustment
+            camPivotOffset = foxCamPivotOffset;
+            camOffset = foxCamOffset;
+
+            AddSpiritBall();
         }
 
-        rb.isKinematic = false;
-        Destroy(castingBar.gameObject);
-        inactive = false;
-        inTransition = false;
+        EndTransition();
 
         // Camera re-orientation
-        camPivot.position += transCamPivotOffset;
-        cam.transform.position = new Vector3(0, 0, -transCamOffset);
-        camRig.SendMessage("ResetOrigDist", transCamOffset);
+        camPivot.position += camPivotOffset;
+        cam.transform.position = new Vector3(0, 0, camOffset);
+        camRig.SendMessage("ResetOrigDist", camOffset);
+
+        base.ToggleWorlds();
     }
 
-    protected virtual IEnumerator OnToggleWorlds()
+    /// <summary>
+    /// Occurs while transitioning worlds
+    /// </summary>
+    private IEnumerator OnToggleWorlds()
     {
         float time = 0;
-        float maxTime = GameManager.transitionTime;
+        float maxTime = transitionTime;
 
-        while (time < maxTime)
-        {
-            time += Time.deltaTime;
-            castingBar.curSize = new Vector2(castingBar.totalSize.x * time/maxTime, castingBar.totalSize.y);
-            yield return null;
-        }
+            while (onTransition && time < maxTime)
+            {
+                time += Time.deltaTime;
+                if (castingBar != null)
+                    castingBar.curSize = new Vector2(castingBar.totalSize.x * time / maxTime, castingBar.totalSize.y);
+                yield return null;
+            }
 
-        ToggleWorlds();
+            if (onTransition)
+                ToggleWorlds();
     }
 }
