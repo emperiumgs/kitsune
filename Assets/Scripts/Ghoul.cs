@@ -68,6 +68,8 @@ public class Ghoul : AbstractMultiWorld
 
     private void Awake()
     {
+        if (spirit)
+            ToggleWorlds();
         initialPoint = transform.position;
         StartCoroutine(Idle());
     }
@@ -274,8 +276,6 @@ public class Ghoul : AbstractMultiWorld
     protected override void ToggleWorlds()
     {
         base.ToggleWorlds();
-
-        print("Toggled");
 
         for (int i = 0; i < renderers.Length; i++)
         {

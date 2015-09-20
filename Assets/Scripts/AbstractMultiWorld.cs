@@ -4,6 +4,7 @@ public abstract class AbstractMultiWorld : MonoBehaviour
 {
     // Static Properties
     public static float transitionTime = 1.5f;
+    protected static bool spirit = false;
 
     // Object Properties
     protected bool onTransition = false;

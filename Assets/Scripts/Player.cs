@@ -415,6 +415,7 @@ public class Player : AbstractMultiWorld
     /// </summary>
     protected override void ToggleWorlds()
     {
+        spirit = !spirit;
         Vector3 camPivotOffset;
         float camOffset;
 
