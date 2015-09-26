@@ -42,12 +42,6 @@ public class GameManager : MonoBehaviour
         Instantiate(humanPrefab);
     }
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.T))
-            BroadcastToggleWorlds("AbortToggleWorlds");
-    }
-
     /// <summary>
     /// Broadcasts a ToggleWorlds Event to all Multi-World objects
     /// </summary>

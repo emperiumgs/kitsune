@@ -1,12 +1,13 @@
 fileFormatVersion: 2
 guid: 6748c044848da7741bbcfca55d21a08f
-timeCreated: 1441809598
+timeCreated: 1443138085
 licenseType: Free
 MonoImporter:
   serializedVersion: 2
   defaultReferences:
   - barPrefab: {fileID: 176634, guid: b6e97b1f28595024d92c89876ce8cbea, type: 2}
-  - otherForm: {instanceID: 0}
+  - uiSeedPrefab: {fileID: 190698, guid: f955bf3ec5b7fd945b8b26063b6e1582, type: 2}
+  - spiritBallPrefab: {fileID: 103450, guid: a9bb7b9cef5c0264280ec108256a9765, type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

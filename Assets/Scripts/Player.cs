@@ -26,6 +26,7 @@ public class Player : AbstractMultiWorld
     [SerializeField]
     private float groundCheckDistance = 0.3f;
     public GameObject barPrefab;
+    public GameObject uiSeedPrefab;
     public Vector3 foxCamPivotOffset = Vector3.down / 2;
     public float foxCamOffset = 1.5f;
     public Vector3 humCamPivotOffset = Vector3.up / 2;
@@ -95,6 +96,7 @@ public class Player : AbstractMultiWorld
 
     // Object Variables
     private ProgressBar castingBar;
+    private GameObject uiSeed;
     private Vector3 camForward;
     private Vector3 move;
     private Vector3 groundNormal;
@@ -106,6 +108,7 @@ public class Player : AbstractMultiWorld
     private float forwardAmount;
     // Fox Variables
     private List<GameObject> spiritBalls = new List<GameObject>();
+    private bool seed;
 
     // Public Object variables
     public bool grounded
@@ -309,10 +312,38 @@ public class Player : AbstractMultiWorld
     private void TakeDamage(int amount)
     {
         if (onTransition)
-        {
             manager.SendMessage("BroadcastToggleWorlds", "AbortToggleWorlds");
-        }
+
         print("Took " + amount + " damage");
+    }
+
+    /// <summary>
+    /// Makes the player collect a seed to grow it afterwards
+    /// </summary>
+    private void TakeSeed()
+    {
+        if (spiritRealm)
+        {
+            if (!seed)
+            {
+                seed = true;
+                uiSeed = Instantiate(uiSeedPrefab) as GameObject;
+                uiSeed.transform.SetParent(FindObjectOfType<Canvas>().transform, false);
+            }
+            // Play sound
+        }
+    }
+
+    /// <summary>
+    /// Drops the seed, destroying its ui feedback
+    /// </summary>
+    private void DropSeed()
+    {
+        if (seed)
+        {
+            seed = false;
+            Destroy(uiSeed);
+        }
     }
 
     /// <summary>
@@ -407,7 +438,7 @@ public class Player : AbstractMultiWorld
     {
         base.AbortToggleWorlds();
         EndTransition();
-        StopCoroutine(OnToggleWorlds());        
+        StopCoroutine(OnToggleWorlds());
     }
 
     /// <summary>
@@ -432,7 +463,7 @@ public class Player : AbstractMultiWorld
 
             // Camera adjustment
             camPivotOffset = humCamPivotOffset;
-            camOffset = humCamOffset;                       
+            camOffset = humCamOffset;
         }
         else
         {
@@ -447,6 +478,9 @@ public class Player : AbstractMultiWorld
         }
 
         EndTransition();
+
+        // Destroy the seed
+        DropSeed();
 
         // Camera re-orientation
         camPivot.position += camPivotOffset;
@@ -464,15 +498,15 @@ public class Player : AbstractMultiWorld
         float time = 0;
         float maxTime = transitionTime;
 
-            while (onTransition && time < maxTime)
-            {
-                time += Time.deltaTime;
-                if (castingBar != null)
-                    castingBar.curSize = new Vector2(castingBar.totalSize.x * time / maxTime, castingBar.totalSize.y);
-                yield return null;
-            }
+        while (onTransition && time < maxTime)
+        {
+            time += Time.deltaTime;
+            if (castingBar != null)
+                castingBar.curSize = new Vector2(castingBar.totalSize.x * time / maxTime, castingBar.totalSize.y);
+            yield return null;
+        }
 
-            if (onTransition)
-                ToggleWorlds();
+        if (onTransition)
+            ToggleWorlds();
     }
 }
