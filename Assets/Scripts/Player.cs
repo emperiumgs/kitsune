@@ -80,6 +80,11 @@ public class Player : AbstractMultiWorld
     {
         get { return GetComponent<Rigidbody>(); }
     }
+    [HideInInspector]
+    public bool hasSeed
+    {
+        get { return seed; }
+    }
     // Fox Reference Variables
     private Vector3 spiritSlotBase
     {
@@ -103,9 +108,11 @@ public class Player : AbstractMultiWorld
     private bool isGrounded;
     private bool inactive;
     private bool jump;
+    private bool climbing;
     private float origGroundCheckDist;
     private float turnAmount;
     private float forwardAmount;
+    private Collider targetClimb;
     // Fox Variables
     private List<GameObject> spiritBalls = new List<GameObject>();
     private bool seed;
@@ -128,7 +135,7 @@ public class Player : AbstractMultiWorld
             if (!jump)
                 jump = Input.GetButtonDown("Jump");
 
-            if (isGrounded && !onTransition && Input.GetButtonDown("Toggle Worlds"))
+            if (isGrounded && !climbing && !onTransition && Input.GetButtonDown("Toggle Worlds"))
             {
                 manager.SendMessage("BroadcastToggleWorlds", "InitToggleWorlds");
             }
@@ -149,25 +156,39 @@ public class Player : AbstractMultiWorld
             float h = Input.GetAxis("Horizontal");
             float v = Input.GetAxis("Vertical");
 
-            // calculate move direction to pass to character
-            if (cam != null)
+            if (!climbing)
             {
-                // calculate camera relative direction to move:
-                camForward = Vector3.Scale(cam.transform.forward, new Vector3(1, 0, 1)).normalized;
-                move = v * camForward + h * cam.transform.right;
+                // calculate move direction to pass to character
+                if (cam != null)
+                {
+                    // calculate camera relative direction to move:
+                    camForward = Vector3.Scale(cam.transform.forward, new Vector3(1, 0, 1)).normalized;
+                    move = v * camForward + h * cam.transform.right;
+                }
+                else
+                {
+                    // we use world-relative directions in the case of no main camera
+                    move = v * Vector3.forward + h * Vector3.right;
+                }
+
+                // walk speed multiplier
+                if (Input.GetKey(KeyCode.LeftShift)) move *= 0.5f;
+
+                // pass all parameters to the character control script
+                Move(move, jump);
+                jump = false;
             }
             else
             {
-                // we use world-relative directions in the case of no main camera
-                move = v * Vector3.forward + h * Vector3.right;
+                move = h * Vector3.right + v * Vector3.up;
+                move = transform.TransformDirection(move);
+                move *= Time.deltaTime;
+                move += transform.position;
+                if (targetClimb.bounds.Contains(move))
+                    rb.MovePosition(move);
+                else
+                    ToggleClimb(null);
             }
-
-            // walk speed multiplier
-            if (Input.GetKey(KeyCode.LeftShift)) move *= 0.5f;
-
-            // pass all parameters to the character control script
-            Move(move, jump);
-            jump = false;
         }
         else
         {
@@ -317,6 +338,8 @@ public class Player : AbstractMultiWorld
         print("Took " + amount + " damage");
     }
 
+    // Seed-Bindweed Content
+
     /// <summary>
     /// Makes the player collect a seed to grow it afterwards
     /// </summary>
@@ -345,6 +368,27 @@ public class Player : AbstractMultiWorld
             Destroy(uiSeed);
         }
     }
+
+    /// <summary>
+    /// Grabs the bindweed, and stops using gravity
+    /// </summary>
+    private void ToggleClimb(Collider target)
+    {        
+        climbing = !climbing;
+        // Am I climbing?
+        if (climbing)
+        {
+            targetClimb = target;
+            Vector3 climbPos = target.transform.position + target.transform.TransformDirection(Vector3.up / 4);
+            climbPos.y = transform.position.y + 0.1f;
+            transform.LookAt(transform.position + target.transform.TransformDirection(Vector3.down));
+            transform.position = climbPos;
+        }
+        rb.useGravity = !climbing;
+        rb.isKinematic = climbing;
+    }
+
+    // Spirit Balls Content
 
     /// <summary>
     /// Adds a new spirit ball on the object
@@ -405,6 +449,8 @@ public class Player : AbstractMultiWorld
 
         AddSpiritBall();
     }
+
+    // Multi-World Content
 
     /// <summary>
     /// Ends the transition process, by returning properties to their earlier states
