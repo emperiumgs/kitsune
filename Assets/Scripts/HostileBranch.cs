@@ -3,13 +3,14 @@ using System.Collections;
 
 public class HostileBranch : MonoBehaviour
 {
+    // Static Variables
+    public static float rotationSpeed = 200f;
+
     // Customizeable Variables
     [Range(0, 90f)]
     public float maxAngle = 45f;
     [Range(-90f, 0)]
     public float minAngle = -45f;
-    [Range(50f, 250f)]
-    public float rotationSpeed = 125f;
 
     private void Awake()
     {
@@ -25,7 +26,6 @@ public class HostileBranch : MonoBehaviour
     private IEnumerator Rotate(bool onward)
     {        
         float initX = transform.eulerAngles.x;
-        print(initX);
         Vector3 curAngles = Vector3.zero;
 
         curAngles.x = initX > 270 ? initX - 360 : initX;
