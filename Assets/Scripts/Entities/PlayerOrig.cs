@@ -4,20 +4,19 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 
-public class Player : AbstractMultiWorld
+public class PlayerOrig : AbstractMultiWorld
 {
     // Customizeable Variables
     [Header("Player Variables")]
-    [SerializeField]
-    private float speed = 5f;
     [SerializeField]
     private float movingTurnSpeed = 360;
     [SerializeField]
     private float stationaryTurnSpeed = 180;
     [SerializeField]
     private float jumpPower = 8f;
+    [Range(1f, 4f)]
     [SerializeField]
-    private float gravityMultiplier = 0.1f;
+    private float gravityMultiplier = 2f;
     [SerializeField]
     private float runCycleLegOffset = 0.2f;
     [SerializeField]
@@ -81,10 +80,6 @@ public class Player : AbstractMultiWorld
     {
         get { return GetComponent<Rigidbody>(); }
     }
-    private CharacterController control
-    {
-        get { return GetComponent<CharacterController>(); }
-    }
     [HideInInspector]
     public bool hasSeed
     {
@@ -133,40 +128,7 @@ public class Player : AbstractMultiWorld
         origGroundCheckDist = groundCheckDistance;
     }
 
-    private void FixedUpdate()
-    {
-        if (!inactive)
-        {
-            // Read Inputs
-            float h = Input.GetAxis("Horizontal");
-            float v = Input.GetAxis("Vertical");
-
-            if (!climbing)
-            {
-                if (control.isGrounded)
-                {
-                    transform.Rotate(h * Vector3.up * Time.deltaTime * 100);
-                    move = v * (cam.transform.forward + v * Vector3.up * Mathf.Cos(cam.transform.eulerAngles.x)) /*+ h * cam.transform.right*/;
-                }
-
-                move.y -= gravityMultiplier;
-
-                control.Move(move * speed * Time.deltaTime);
-                anim.SetFloat("Forward", transform.InverseTransformDirection(move).z, 0.1f, Time.deltaTime);
-            }
-            else
-            {
-                move = h * Vector3.right + v * Vector3.up;
-                move = transform.TransformDirection(move);
-                if (targetClimb.bounds.Contains(move))
-                    control.Move(move * Time.deltaTime);
-                else
-                    ToggleClimb(null);
-            }
-        }
-    }
-
-    /*private void Update()
+    private void Update()
     {
         if (!inactive)
         {
@@ -196,9 +158,21 @@ public class Player : AbstractMultiWorld
 
             if (!climbing)
             {
-                camForward = Vector3.Scale(cam.transform.forward, new Vector3(1, 0, 1)).normalized;
-                print(camForward);
-                move = v * camForward + h * cam.transform.right;
+                // calculate move direction to pass to character
+                if (cam != null)
+                {
+                    // calculate camera relative direction to move:
+                    camForward = Vector3.Scale(cam.transform.forward, new Vector3(1, 0, 1)).normalized;
+                    move = v * camForward + h * cam.transform.right;
+                }
+                else
+                {
+                    // we use world-relative directions in the case of no main camera
+                    move = v * Vector3.forward + h * Vector3.right;
+                }
+
+                // walk speed multiplier
+                if (Input.GetKey(KeyCode.LeftShift)) move *= 0.5f;
 
                 // pass all parameters to the character control script
                 Move(move, jump);
@@ -350,7 +324,7 @@ public class Player : AbstractMultiWorld
             v.y = rb.velocity.y;
             rb.velocity = v;
         }
-    }*/
+    }
 
     /// <summary>
     /// Inflicts the specified amount of damage
