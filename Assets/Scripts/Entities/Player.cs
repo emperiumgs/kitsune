@@ -11,9 +11,11 @@ public class Player : AbstractMultiWorld
     [SerializeField]
     private float speed = 3.5f;
     [SerializeField]
-    private float jumpSpeed = 8.8f;
+    private float jumpForce = 8.8f;
     [SerializeField]
     private float gravityMultiplier = 0.7f;
+    [SerializeField]
+    private float rotateSensitivity = 100f;
     public GameObject barPrefab;
     public GameObject uiSeedPrefab;
     public Vector3 foxCamOffset = new Vector3(0, 1f, -1.5f);
@@ -59,11 +61,7 @@ public class Player : AbstractMultiWorld
     {
         get { return GetComponent<CharacterController>(); }
     }
-    [HideInInspector]
-    public bool hasSeed
-    {
-        get { return seed; }
-    }
+    
     // Fox Reference Variables
     private Vector3 spiritSlotBase
     {
@@ -95,11 +93,18 @@ public class Player : AbstractMultiWorld
     {
         get { return control.isGrounded; }
     }
+    public bool hasSeed
+    {
+        get { return seed; }
+    }
 
     private void Update()
     {
         if (control.isGrounded && !climbing && !onTransition && Input.GetButtonDown("Toggle Worlds"))
             manager.SendMessage("BroadcastToggleWorlds", "InitToggleWorlds");
+
+        if (Input.GetButtonDown("Jump"))
+            jump = true;            
     }
 
     private void FixedUpdate()
@@ -111,20 +116,31 @@ public class Player : AbstractMultiWorld
             float v = Input.GetAxis("Vertical");
 
             if (!climbing)
-            {               
+            {        
+                transform.Rotate(h * Vector3.up * Time.deltaTime * rotateSensitivity);
 
-                transform.Rotate(h * Vector3.up * Time.deltaTime * 100);
                 if (control.isGrounded)
                 {
-                    move = v * cam.transform.forward * speed;
+                    Vector3 direction = camScript.mouseOriented ? transform.forward : cam.transform.forward;
 
-                    if (Input.GetButtonDown("Jump"))
-                        move.y = jumpSpeed;
+                    move = v * direction * speed;
+
+                    if (jump)
+                    {
+                        move.y = jumpForce;
+                        jump = false;
+                    }
                 }               
 
                 move.y -= gravityMultiplier;
 
                 control.Move(move * Time.deltaTime);
+
+                anim.SetBool("OnGround", control.isGrounded);
+                if (!control.isGrounded)
+                {
+                    anim.SetFloat("Jump", move.y);
+                }
 
                 if (!onTransition)
                     anim.SetFloat("Forward", transform.InverseTransformDirection(move).z, 0.1f, Time.deltaTime);
