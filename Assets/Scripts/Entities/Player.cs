@@ -9,29 +9,15 @@ public class Player : AbstractMultiWorld
     // Customizeable Variables
     [Header("Player Variables")]
     [SerializeField]
-    private float speed = 5f;
+    private float speed = 3.5f;
     [SerializeField]
-    private float movingTurnSpeed = 360;
+    private float jumpSpeed = 8.8f;
     [SerializeField]
-    private float stationaryTurnSpeed = 180;
-    [SerializeField]
-    private float jumpPower = 8f;
-    [SerializeField]
-    private float gravityMultiplier = 0.1f;
-    [SerializeField]
-    private float runCycleLegOffset = 0.2f;
-    [SerializeField]
-    private float moveSpeedMultiplier = 1f;
-    [SerializeField]
-    private float animSpeedMultiplier = 1f;
-    [SerializeField]
-    private float groundCheckDistance = 0.3f;
+    private float gravityMultiplier = 0.7f;
     public GameObject barPrefab;
     public GameObject uiSeedPrefab;
-    public Vector3 foxCamPivotOffset = Vector3.down / 2;
-    public float foxCamOffset = 1.5f;
-    public Vector3 humCamPivotOffset = Vector3.up / 2;
-    public float humCamOffset = 2.5f;
+    public Vector3 foxCamOffset = new Vector3(0, 1f, -1.5f);
+    public Vector3 humCamOffset = new Vector3(0, 1.5f, -2.5f);
     // Fox Customizeable Variables
     [Header("Fox Variables")]
     public GameObject spiritBallPrefab;
@@ -53,13 +39,9 @@ public class Player : AbstractMultiWorld
     {
         get { return Camera.main; }
     }
-    private Transform camPivot
+    private ThirdPersonCamera camScript
     {
-        get { return cam.transform.parent; }
-    }
-    private GameObject camRig
-    {
-        get { return camPivot.parent.gameObject; }
+        get { return cam.GetComponent<ThirdPersonCamera>(); }
     }
     private Bloom camBloom
     {
@@ -69,17 +51,9 @@ public class Player : AbstractMultiWorld
     {
         get { return cam.GetComponent<ColorCorrectionCurves>(); }
     }
-    private CapsuleCollider col
-    {
-        get { return GetComponent<CapsuleCollider>(); }
-    }
     private Animator anim
     {
         get { return GetComponent<Animator>(); }
-    }
-    private Rigidbody rb
-    {
-        get { return GetComponent<Rigidbody>(); }
     }
     private CharacterController control
     {
@@ -107,16 +81,10 @@ public class Player : AbstractMultiWorld
     // Object Variables
     private ProgressBar castingBar;
     private GameObject uiSeed;
-    private Vector3 camForward;
     private Vector3 move;
-    private Vector3 groundNormal;
-    private bool isGrounded;
     private bool inactive;
     private bool jump;
     private bool climbing;
-    private float origGroundCheckDist;
-    private float turnAmount;
-    private float forwardAmount;
     private Collider targetClimb;
     // Fox Variables
     private List<GameObject> spiritBalls = new List<GameObject>();
@@ -125,12 +93,13 @@ public class Player : AbstractMultiWorld
     // Public Object variables
     public bool grounded
     {
-        get { return isGrounded; }
+        get { return control.isGrounded; }
     }
 
-    private void Awake()
+    private void Update()
     {
-        origGroundCheckDist = groundCheckDistance;
+        if (control.isGrounded && !climbing && !onTransition && Input.GetButtonDown("Toggle Worlds"))
+            manager.SendMessage("BroadcastToggleWorlds", "InitToggleWorlds");
     }
 
     private void FixedUpdate()
@@ -142,17 +111,25 @@ public class Player : AbstractMultiWorld
             float v = Input.GetAxis("Vertical");
 
             if (!climbing)
-            {
+            {               
+
+                transform.Rotate(h * Vector3.up * Time.deltaTime * 100);
                 if (control.isGrounded)
                 {
-                    transform.Rotate(h * Vector3.up * Time.deltaTime * 100);
-                    move = v * (cam.transform.forward + v * Vector3.up * Mathf.Cos(cam.transform.eulerAngles.x)) /*+ h * cam.transform.right*/;
-                }
+                    move = v * cam.transform.forward * speed;
+
+                    if (Input.GetButtonDown("Jump"))
+                        move.y = jumpSpeed;
+                }               
 
                 move.y -= gravityMultiplier;
 
-                control.Move(move * speed * Time.deltaTime);
-                anim.SetFloat("Forward", transform.InverseTransformDirection(move).z, 0.1f, Time.deltaTime);
+                control.Move(move * Time.deltaTime);
+
+                if (!onTransition)
+                    anim.SetFloat("Forward", transform.InverseTransformDirection(move).z, 0.1f, Time.deltaTime);
+                else
+                    anim.SetFloat("Forward", 0);
             }
             else
             {
@@ -410,8 +387,6 @@ public class Player : AbstractMultiWorld
             transform.LookAt(transform.position + target.transform.TransformDirection(Vector3.down));
             transform.position = climbPos;
         }
-        rb.useGravity = !climbing;
-        rb.isKinematic = climbing;
     }
 
     // Spirit Balls Content
@@ -483,7 +458,6 @@ public class Player : AbstractMultiWorld
     /// </summary>
     private void EndTransition()
     {
-        rb.isKinematic = false;
         Destroy(castingBar.gameObject);
         inactive = false;
     }
@@ -495,9 +469,6 @@ public class Player : AbstractMultiWorld
     {
         base.InitToggleWorlds();
         inactive = true;
-        forwardAmount = 0;
-        turnAmount = 0;
-        rb.isKinematic = true;
         castingBar = Instantiate(barPrefab).GetComponent<ProgressBar>();
         castingBar.text = "CASTING";
         StartCoroutine(OnToggleWorlds());
@@ -519,8 +490,6 @@ public class Player : AbstractMultiWorld
     protected override void ToggleWorlds()
     {
         spirit = !spirit;
-        Vector3 camPivotOffset;
-        float camOffset;
 
         // Toggle the active body
         if (spiritRealm)
@@ -528,23 +497,19 @@ public class Player : AbstractMultiWorld
             // Prototyping purposes
             transform.localScale = Vector3.one;
 
+            camScript.offsetVector = humCamOffset;
+
             for (int i = 0; i < spiritBalls.Count; i++)
                 Destroy(spiritBalls[i].gameObject);
 
             spiritBalls.Clear();
-
-            // Camera adjustment
-            camPivotOffset = humCamPivotOffset;
-            camOffset = humCamOffset;
         }
         else
         {
             // Prototyping purposes
             transform.localScale = Vector3.one / 2;
 
-            // Camera adjustment
-            camPivotOffset = foxCamPivotOffset;
-            camOffset = foxCamOffset;
+            camScript.offsetVector = foxCamOffset;
 
             AddSpiritBall();
         }
@@ -553,11 +518,6 @@ public class Player : AbstractMultiWorld
 
         // Destroy the seed
         DropSeed();
-
-        // Camera re-orientation
-        camPivot.position += camPivotOffset;
-        cam.transform.position = new Vector3(0, 0, camOffset);
-        camRig.SendMessage("ResetOrigDist", camOffset);
 
         base.ToggleWorlds();
     }
