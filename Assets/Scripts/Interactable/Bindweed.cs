@@ -75,7 +75,7 @@ public class Bindweed : AbstractMultiWorld
     protected override void AbortToggleWorlds()
     {
         base.AbortToggleWorlds();
-        StopCoroutine(OnToggleWorlds());
+        StopCoroutine("OnToggleWorlds");
     }
 
     /// <summary>

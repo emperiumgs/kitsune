@@ -31,6 +31,12 @@ public class Player : AbstractMultiWorld
     private Vector3 spiritSlotXOffset;
     [Range(0.5f, 5)]
     public float spiritRespawnTime = 1;
+    [Range(0.1f, 1f)]
+    public float dodgeTime = 0.5f;
+    [Range(1f, 3f)]
+    public float dodgeForce = 2.4f;
+    [Range(0.05f, 0.5f)]
+    public float dodgeGrav = 0.2f;
 
     // Reference Variables (read-only)
     private GameManager manager
@@ -100,14 +106,30 @@ public class Player : AbstractMultiWorld
 
     private void Update()
     {
-        if (control.isGrounded && !climbing && !onTransition && Input.GetButtonDown("Toggle Worlds"))
-            manager.SendMessage("BroadcastToggleWorlds", "InitToggleWorlds");
+        if (!inactive)
+        {
+            if (control.isGrounded && !climbing && !onTransition)
+            {
+                if (Input.GetButtonDown("Toggle Worlds"))
+                    manager.SendMessage("BroadcastToggleWorlds", "InitToggleWorlds");
 
-        if (Input.GetButtonDown("Jump"))
-            jump = true;
+                if (Input.GetButtonDown("Jump"))
+                    jump = true;
 
-        if (spiritRealm && Input.GetButtonDown("Attack"))
-            ShootSpiritBall();  
+                if (spiritRealm)
+                {
+                    if (Input.GetButtonDown("Attack"))
+                        ShootSpiritBall();
+
+                    int dodge = (int)Input.GetAxis("Dodge");
+                    if (dodge != 0)
+                    {
+                        inactive = true;
+                        StartCoroutine(OnDodging(dodge));
+                    }
+                }
+            }
+        }
     }
 
     private void FixedUpdate()
@@ -154,7 +176,6 @@ public class Player : AbstractMultiWorld
             {
                 move = h * Vector3.right + v * Vector3.up;
                 move = transform.TransformDirection(move);
-                //print(transform.InverseTransformPoint(move) + " " + transform.TransformPoint(move) + " " + move);
                 if (move == Vector3.zero || targetClimb.bounds.Contains(transform.position))
                     control.Move(move * Time.deltaTime);
                 else
@@ -177,6 +198,28 @@ public class Player : AbstractMultiWorld
             manager.SendMessage("BroadcastToggleWorlds", "AbortToggleWorlds");
 
         print("Took " + amount + " damage");
+    }
+
+    /// <summary>
+    /// Dodge by jumping sideways
+    /// </summary>
+    /// <param name="dir">The dir given by input to move</param>
+    private IEnumerator OnDodging(int dir)
+    {
+        Vector3 target = transform.TransformDirection(dir * Vector3.right);
+        float time = 0;
+        target.y = dodgeForce * dodgeTime;              
+        anim.SetBool("OnGround", false);
+        while (time < dodgeTime)
+        {
+            time += Time.deltaTime;
+            target.y -= dodgeGrav * dodgeTime;
+            anim.SetFloat("Jump", target.y);
+            control.Move(target*Time.deltaTime/dodgeTime);
+            yield return null;
+        }
+
+        inactive = false;
     }
 
     // Seed-Bindweed Content
@@ -319,7 +362,7 @@ public class Player : AbstractMultiWorld
     {
         base.AbortToggleWorlds();
         EndTransition();
-        StopCoroutine(OnToggleWorlds());
+        StopCoroutine("OnToggleWorlds");
     }
 
     /// <summary>

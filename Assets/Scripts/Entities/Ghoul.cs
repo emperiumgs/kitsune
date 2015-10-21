@@ -261,16 +261,18 @@ public class Ghoul : AbstractMultiWorld
         return navHit.position;
     }
 
+    // Multi-World
+
     protected override void InitToggleWorlds()
     {
         base.InitToggleWorlds();
-        StartCoroutine(OnToggleWorlds());
+        StartCoroutine("OnToggleWorlds");
     }
 
     protected override void AbortToggleWorlds()
     {
         base.AbortToggleWorlds();
-        StopCoroutine(OnToggleWorlds());        
+        StopCoroutine("OnToggleWorlds");
     }
 
     protected override void ToggleWorlds()
