@@ -6,7 +6,6 @@ public class ThirdPersonCamera : AbstractMultiWorld
 {
     // Customizeable Variables
     public Vector3 offsetVector = new Vector3(0, 1.5f, -2.5f);
-    public Vector3 foxOffsetVector = new Vector3(0, 1f, -1.5f);
     public float offsetSpeed = 6f;
     public float resetTime = 5f;
     [Header("Transition Variables")]
@@ -62,7 +61,48 @@ public class ThirdPersonCamera : AbstractMultiWorld
         transform.rotation = Quaternion.Euler(0, target.eulerAngles.y, 0);
     }
 
-    private void Update()
+    private void LateUpdate()
+    {
+        ControlRotation();        
+    }
+
+    private void FixedUpdate()
+    {
+        UpdatePivot();
+
+        transform.localPosition = offsetVector;
+
+        Vector3 newPos = Vector3.zero;
+        // check to see if there is anything behind the target
+        RaycastHit hit;
+        Vector3 dir = (transform.position - target.position - Vector3.up / 2).normalized;
+
+        Debug.DrawRay(target.position + Vector3.up / 2, dir, Color.red);
+
+        // cast the bumper ray out from rear and check to see if there is anything behind
+        if (Physics.SphereCast(target.position + Vector3.up / 2, 0.2f, dir, out hit, offsetVector.magnitude) && hit.transform != target && !hit.collider.isTrigger)
+        {
+            newPos.z = transform.InverseTransformPoint(hit.point).z;
+            transform.localPosition += newPos;
+        }
+    }
+
+    /// <summary>
+    /// Updates the pivot position to match the target's
+    /// </summary>
+    private void UpdatePivot()
+    {
+        pivot.position = Vector3.Lerp(pivot.position, target.position, Time.deltaTime * offsetSpeed);
+        // Smoother rotation
+        //pivot.rotation = Quaternion.Lerp(pivot.rotation, target.rotation, Time.deltaTime * offsetSpeed);
+        if (!m_MouseOriented)
+            pivot.rotation = target.rotation;
+    }
+
+    /// <summary>
+    /// Controls the camera rotation both by mouse and automatic
+    /// </summary>
+    private void ControlRotation()
     {
         float x = Input.GetAxis("MouseX");
         float y = Input.GetAxis("MouseY");
@@ -76,7 +116,7 @@ public class ThirdPersonCamera : AbstractMultiWorld
             }
 
             m_MouseOriented = true;
-        }        
+        }
 
         if (m_MouseOriented)
         {
@@ -97,23 +137,6 @@ public class ThirdPersonCamera : AbstractMultiWorld
         transform.localEulerAngles = new Vector3(10, transform.localEulerAngles.y, 0);
     }
 
-    private void FixedUpdate()
-    {
-        UpdatePivot();         
-    }
-
-    /// <summary>
-    /// Updates the pivot position to match the target's
-    /// </summary>
-    private void UpdatePivot()
-    {
-        pivot.position = Vector3.Lerp(pivot.position, target.position, Time.deltaTime * offsetSpeed);
-        // Smoother rotation
-        //pivot.rotation = Quaternion.Lerp(pivot.rotation, target.rotation, Time.deltaTime * offsetSpeed);
-        if (!m_MouseOriented)
-            pivot.rotation = target.rotation;
-    }
-
     /// <summary>
     /// Resets the orientation of the camera, to look to the pivot, and match the target's rotation
     /// </summary>
@@ -125,8 +148,8 @@ public class ThirdPersonCamera : AbstractMultiWorld
             time += Time.deltaTime;
             if (time > resetTime / 2)
             {
-                pivot.rotation = Quaternion.Lerp(pivot.rotation, target.rotation, Time.deltaTime * offsetSpeed / 3);
-                transform.position = Vector3.Lerp(transform.position, pivot.position + pivot.TransformDirection(offsetVector), Time.deltaTime * offsetSpeed / 3);
+                pivot.rotation = Quaternion.Lerp(pivot.rotation, target.rotation, Time.deltaTime * offsetSpeed);
+                transform.position = Vector3.Lerp(transform.position, pivot.position + pivot.TransformDirection(offsetVector), Time.deltaTime * offsetSpeed);
             }
             yield return null;
         }

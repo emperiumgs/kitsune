@@ -104,7 +104,10 @@ public class Player : AbstractMultiWorld
             manager.SendMessage("BroadcastToggleWorlds", "InitToggleWorlds");
 
         if (Input.GetButtonDown("Jump"))
-            jump = true;            
+            jump = true;
+
+        if (spiritRealm && Input.GetButtonDown("Attack"))
+            ShootSpiritBall();  
     }
 
     private void FixedUpdate()
@@ -151,10 +154,15 @@ public class Player : AbstractMultiWorld
             {
                 move = h * Vector3.right + v * Vector3.up;
                 move = transform.TransformDirection(move);
-                if (targetClimb.bounds.Contains(move))
+                //print(transform.InverseTransformPoint(move) + " " + transform.TransformPoint(move) + " " + move);
+                if (move == Vector3.zero || targetClimb.bounds.Contains(transform.position))
                     control.Move(move * Time.deltaTime);
                 else
+                {
+                    control.Move(-targetClimb.transform.up / 2);    
                     ToggleClimb(null);
+                    print("Unclimb");
+                }
             }
         }
     }

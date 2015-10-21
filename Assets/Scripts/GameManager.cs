@@ -39,7 +39,7 @@ public class GameManager : MonoBehaviour
                 Destroy(gameObject);
         }
 
-        Instantiate(humanPrefab);
+        //Instantiate(humanPrefab);
     }
 
     /// <summary>
