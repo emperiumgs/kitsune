@@ -31,10 +31,7 @@ public class Bindweed : AbstractMultiWorld
         if (other.tag == "Player")
         {
             if (Input.GetButtonDown("Action"))
-            {
-                print("Climb/Unclimb");
                 other.SendMessage("ToggleClimb", col);
-            }
         }
     }
 

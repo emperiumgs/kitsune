@@ -1,11 +1,15 @@
 using UnityEngine;
-using UnityStandardAssets.ImageEffects;
 using System.Collections;
 using System.Collections.Generic;
-using System;
 
 public class Player : AbstractMultiWorld
 {
+    // Player Events
+    public delegate void ProgressBarHandler(ProgressEventArgs progressEvent);
+    public static event ProgressBarHandler ProgressBar;
+    public delegate void ItemHandler(ItemEventArgs itemEvent);
+    public static event ItemHandler ItemHold;
+
     // Customizeable Variables
     [Header("Player Variables")]
     [SerializeField]
@@ -16,8 +20,8 @@ public class Player : AbstractMultiWorld
     private float gravityMultiplier = 0.7f;
     [SerializeField]
     private float rotateSensitivity = 100f;
-    public GameObject barPrefab;
-    public GameObject uiSeedPrefab;
+    //public GameObject barPrefab;
+    //public GameObject uiSeedPrefab;
     public Vector3 foxCamOffset = new Vector3(0, 1f, -1.5f);
     public Vector3 humCamOffset = new Vector3(0, 1.5f, -2.5f);
     // Fox Customizeable Variables
@@ -51,14 +55,6 @@ public class Player : AbstractMultiWorld
     {
         get { return cam.GetComponent<ThirdPersonCamera>(); }
     }
-    private Bloom camBloom
-    {
-        get { return cam.GetComponent<Bloom>(); }
-    }
-    private ColorCorrectionCurves camColor
-    {
-        get { return cam.GetComponent<ColorCorrectionCurves>(); }
-    }
     private Animator anim
     {
         get { return GetComponent<Animator>(); }
@@ -83,8 +79,6 @@ public class Player : AbstractMultiWorld
     }
 
     // Object Variables
-    private ProgressBar castingBar;
-    private GameObject uiSeed;
     private Vector3 move;
     private bool inactive;
     private bool jump;
@@ -118,7 +112,7 @@ public class Player : AbstractMultiWorld
 
                 if (spiritRealm)
                 {
-                    if (Input.GetButtonDown("Attack"))
+                    if (spiritBalls.Count > 0 && Input.GetButtonDown("Attack"))
                         ShootSpiritBall();
 
                     int dodge = (int)Input.GetAxis("Dodge");
@@ -182,7 +176,6 @@ public class Player : AbstractMultiWorld
                 {
                     control.Move(-targetClimb.transform.up / 2);    
                     ToggleClimb(null);
-                    print("Unclimb");
                 }
             }
         }
@@ -234,8 +227,7 @@ public class Player : AbstractMultiWorld
             if (!seed)
             {
                 seed = true;
-                uiSeed = Instantiate(uiSeedPrefab) as GameObject;
-                uiSeed.transform.SetParent(FindObjectOfType<Canvas>().transform, false);
+                ItemHold(new ItemEventArgs("seed"));
             }
             // Play sound
         }
@@ -248,8 +240,8 @@ public class Player : AbstractMultiWorld
     {
         if (seed)
         {
+            ItemHold(new ItemEventArgs("seed", false));
             seed = false;
-            Destroy(uiSeed);
         }
     }
 
@@ -339,7 +331,7 @@ public class Player : AbstractMultiWorld
     /// </summary>
     private void EndTransition()
     {
-        Destroy(castingBar.gameObject);
+        ProgressBar(null);
         inactive = false;
     }
 
@@ -350,8 +342,7 @@ public class Player : AbstractMultiWorld
     {
         base.InitToggleWorlds();
         inactive = true;
-        castingBar = Instantiate(barPrefab).GetComponent<ProgressBar>();
-        castingBar.text = "CASTING";
+        ProgressBar(new ProgressEventArgs("CASTING", transitionTime));
         StartCoroutine(OnToggleWorlds());
     }
 
@@ -414,8 +405,6 @@ public class Player : AbstractMultiWorld
         while (onTransition && time < maxTime)
         {
             time += Time.deltaTime;
-            if (castingBar != null)
-                castingBar.curSize = new Vector2(castingBar.totalSize.x * time / maxTime, castingBar.totalSize.y);
             yield return null;
         }
 
