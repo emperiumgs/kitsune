@@ -4,6 +4,16 @@ using System.Collections.Generic;
 
 public class Player : AbstractMultiWorld
 {
+    // Player States
+    private enum State
+    {
+        None,
+        Default,
+        Transitioning,
+        Dodging,
+        Hit,
+    }
+
     // Player Events
     public delegate void ProgressBarHandler(ProgressEventArgs progressEvent);
     public static event ProgressBarHandler ProgressBar;
@@ -63,7 +73,7 @@ public class Player : AbstractMultiWorld
     {
         get { return GetComponent<CharacterController>(); }
     }
-    
+
     // Fox Reference Variables
     private Vector3 spiritSlotBase
     {
@@ -79,8 +89,9 @@ public class Player : AbstractMultiWorld
     }
 
     // Object Variables
+    private State state;
+    private Coroutine current;
     private Vector3 move;
-    private bool inactive;
     private bool jump;
     private bool climbing;
     private Collider targetClimb;
@@ -98,9 +109,20 @@ public class Player : AbstractMultiWorld
         get { return seed; }
     }
 
+    /// <summary>
+    /// Initializes the player actions
+    /// </summary>
+    private void Awake()
+    {
+        current = StartCoroutine(DefaultUpdate());
+    }
+
+    /// <summary>
+    /// Handles player action inputs
+    /// </summary>
     private void Update()
     {
-        if (!inactive)
+        if (state == State.Default)
         {
             if (control.isGrounded && !climbing && !onTransition)
             {
@@ -118,24 +140,53 @@ public class Player : AbstractMultiWorld
                     int dodge = (int)Input.GetAxis("Dodge");
                     if (dodge != 0)
                     {
-                        inactive = true;
-                        StartCoroutine(OnDodging(dodge));
+                        StopCoroutine(current);
+                        current = StartCoroutine(OnDodging(dodge));
                     }
                 }
             }
         }
     }
 
-    private void FixedUpdate()
+    /// <summary>
+    /// Inflicts the specified amount of damage
+    /// </summary>
+    /// <param name="amount">The amount of damage to inflict</param>
+    private void TakeDamage(int amount)
     {
-        if (!inactive)
+        if (onTransition)
+            manager.SendMessage("BroadcastToggleWorlds", "AbortToggleWorlds");
+
+        print("Took " + amount + " damage");
+    }
+
+    /// <summary>
+    /// Inflicts damage on the player and knocks him
+    /// </summary>
+    private void BranchHit(Vector3 dir)
+    {
+        if (state != State.Hit)
+        {
+            TakeDamage(10);
+            StopCoroutine(current);
+            current = StartCoroutine(OnBranchHit(dir));
+        }
+    }
+
+    /// <summary>
+    /// Handles player movement
+    /// </summary>
+    private IEnumerator DefaultUpdate()
+    {
+        state = State.Default;
+        while (state == State.Default)
         {
             // Read Inputs
             float h = Input.GetAxis("Horizontal");
             float v = Input.GetAxis("Vertical");
 
             if (!climbing)
-            {        
+            {
                 transform.Rotate(h * Vector3.up * Time.deltaTime * rotateSensitivity);
 
                 if (control.isGrounded)
@@ -149,7 +200,7 @@ public class Player : AbstractMultiWorld
                         move.y = jumpForce;
                         jump = false;
                     }
-                }               
+                }
 
                 move.y -= gravityMultiplier;
 
@@ -174,23 +225,12 @@ public class Player : AbstractMultiWorld
                     control.Move(move * Time.deltaTime);
                 else
                 {
-                    control.Move(-targetClimb.transform.up / 2);    
+                    control.Move(-targetClimb.transform.up / 2);
                     ToggleClimb(null);
                 }
             }
+            yield return new WaitForFixedUpdate();
         }
-    }
-
-    /// <summary>
-    /// Inflicts the specified amount of damage
-    /// </summary>
-    /// <param name="amount">The amount of damage to inflict</param>
-    private void TakeDamage(int amount)
-    {
-        if (onTransition)
-            manager.SendMessage("BroadcastToggleWorlds", "AbortToggleWorlds");
-
-        print("Took " + amount + " damage");
     }
 
     /// <summary>
@@ -199,20 +239,43 @@ public class Player : AbstractMultiWorld
     /// <param name="dir">The dir given by input to move</param>
     private IEnumerator OnDodging(int dir)
     {
+        state = State.Dodging;
         Vector3 target = transform.TransformDirection(dir * Vector3.right);
         float time = 0;
-        target.y = dodgeForce * dodgeTime;              
+        target.y = dodgeForce * dodgeTime;
         anim.SetBool("OnGround", false);
-        while (time < dodgeTime)
+        while (time < dodgeTime && state == State.Dodging)
         {
             time += Time.deltaTime;
             target.y -= dodgeGrav * dodgeTime;
             anim.SetFloat("Jump", target.y);
-            control.Move(target*Time.deltaTime/dodgeTime);
+            control.Move(target * Time.deltaTime / dodgeTime);
             yield return null;
         }
 
-        inactive = false;
+        current = StartCoroutine(DefaultUpdate());
+    }
+
+    /// <summary>
+    /// Knocks the player off the surface
+    /// </summary>
+    private IEnumerator OnBranchHit(Vector3 dir)
+    {
+        state = State.Hit;
+        dir *= 8;
+        dir.y = jumpForce / 2;
+        print(dir);
+        float y = transform.position.y;
+        anim.SetBool("OnGround", false);
+        while ((dir.y > y || !control.isGrounded) && state == State.Hit)
+        {
+            dir.y -= gravityMultiplier;
+            anim.SetFloat("Jump", dir.y);
+            control.Move(dir * Time.deltaTime);
+            yield return null;
+        }
+
+        current = StartCoroutine(DefaultUpdate());
     }
 
     // Seed-Bindweed Content
@@ -249,7 +312,7 @@ public class Player : AbstractMultiWorld
     /// Grabs the bindweed, and stops using gravity
     /// </summary>
     private void ToggleClimb(Collider target)
-    {        
+    {
         climbing = !climbing;
         // Am I climbing?
         if (climbing)
@@ -332,7 +395,7 @@ public class Player : AbstractMultiWorld
     private void EndTransition()
     {
         ProgressBar(null);
-        inactive = false;
+        current = StartCoroutine(DefaultUpdate());
     }
 
     /// <summary>
@@ -341,7 +404,8 @@ public class Player : AbstractMultiWorld
     protected override void InitToggleWorlds()
     {
         base.InitToggleWorlds();
-        inactive = true;
+        state = State.Transitioning;
+        StopCoroutine(current);
         ProgressBar(new ProgressEventArgs("CASTING", transitionTime));
         StartCoroutine(OnToggleWorlds());
     }
