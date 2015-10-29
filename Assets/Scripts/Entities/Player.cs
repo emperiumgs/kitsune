@@ -174,13 +174,28 @@ public class Player : AbstractMultiWorld
     }
 
     /// <summary>
+    /// Enters in cinematic mode disabling inputs and movement
+    /// </summary>
+    /// <param name="enter">Should the player enter or exit the cinematic mode?</param>
+    public void CinematicMode(bool enter)
+    {
+        if (enter)
+        {
+            StopCoroutine(current);
+            state = State.None;
+        }
+        else
+            current = StartCoroutine(DefaultUpdate());
+    }
+
+    /// <summary>
     /// Handles player movement
     /// </summary>
     private IEnumerator DefaultUpdate()
     {
-        state = State.Default;
+        state = State.Default;        
         while (state == State.Default)
-        {
+        {   
             // Read Inputs
             float h = Input.GetAxis("Horizontal");
             float v = Input.GetAxis("Vertical");
@@ -264,7 +279,6 @@ public class Player : AbstractMultiWorld
         state = State.Hit;
         dir *= 8;
         dir.y = jumpForce / 2;
-        print(dir);
         float y = transform.position.y;
         anim.SetBool("OnGround", false);
         while ((dir.y > y || !control.isGrounded) && state == State.Hit)
@@ -404,8 +418,8 @@ public class Player : AbstractMultiWorld
     protected override void InitToggleWorlds()
     {
         base.InitToggleWorlds();
-        state = State.Transitioning;
         StopCoroutine(current);
+        state = State.Transitioning;        
         ProgressBar(new ProgressEventArgs("CASTING", transitionTime));
         StartCoroutine(OnToggleWorlds());
     }
@@ -467,7 +481,7 @@ public class Player : AbstractMultiWorld
         float maxTime = transitionTime;
 
         while (onTransition && time < maxTime)
-        {
+        {          
             time += Time.deltaTime;
             yield return null;
         }
