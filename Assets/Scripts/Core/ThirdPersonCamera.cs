@@ -45,9 +45,7 @@ public class ThirdPersonCamera : AbstractMultiWorld
     }
 
     // Object Variables
-    private Coroutine timer;
     private bool m_MouseOriented;
-    private bool reseting;
 
     // Public Reference Variables
     public bool mouseOriented
@@ -80,7 +78,7 @@ public class ThirdPersonCamera : AbstractMultiWorld
         Debug.DrawRay(target.position + Vector3.up / 2, dir, Color.red);
 
         // cast the bumper ray out from rear and check to see if there is anything behind
-        if (Physics.SphereCast(target.position + Vector3.up / 2, 0.2f, dir, out hit, offsetVector.magnitude) && hit.transform != target && !hit.collider.isTrigger)
+        if (Physics.SphereCast(target.position + Vector3.up / 2, 0.3f, dir, out hit, offsetVector.magnitude) && hit.transform != target && !hit.collider.isTrigger)
         {
             newPos.z = transform.InverseTransformPoint(hit.point).z;
             transform.localPosition += newPos;
@@ -95,8 +93,8 @@ public class ThirdPersonCamera : AbstractMultiWorld
         pivot.position = Vector3.Lerp(pivot.position, target.position, Time.deltaTime * offsetSpeed);
         // Smoother rotation
         //pivot.rotation = Quaternion.Lerp(pivot.rotation, target.rotation, Time.deltaTime * offsetSpeed);
-        if (!m_MouseOriented)
-            pivot.rotation = target.rotation;
+        //if (!m_MouseOriented)
+        //    pivot.rotation = target.rotation;
     }
 
     /// <summary>
@@ -107,58 +105,14 @@ public class ThirdPersonCamera : AbstractMultiWorld
         float x = Input.GetAxis("MouseX");
         float y = Input.GetAxis("MouseY");
 
-        if (x != 0 || y != 0)
-        {
-            if (reseting)
-            {
-                StopCoroutine(timer);
-                reseting = false;
-            }
-
-            m_MouseOriented = true;
-        }
-
-        if (m_MouseOriented)
-        {
             float vRot = pivot.localEulerAngles.x + y * -4;
             if (vRot > 180)
                 vRot -= 360;
             vRot = Mathf.Clamp(vRot, -30f, 15f);
             pivot.localEulerAngles = new Vector3(vRot, pivot.localEulerAngles.y + x * 4);
 
-            if (!reseting)
-            {
-                timer = StartCoroutine(ResetOrientation());
-                reseting = true;
-            }
-        }
-
         transform.rotation = Quaternion.LookRotation(pivot.position - transform.position);
         transform.localEulerAngles = new Vector3(10, transform.localEulerAngles.y, 0);
-    }
-
-    /// <summary>
-    /// Resets the orientation of the camera, to look to the pivot, and match the target's rotation
-    /// </summary>
-    private IEnumerator ResetOrientation()
-    {
-        float time = 0;
-        while (time < resetTime)
-        {
-            time += Time.deltaTime;
-            if (time > resetTime / 2)
-            {
-                pivot.rotation = Quaternion.Lerp(pivot.rotation, target.rotation, Time.deltaTime * offsetSpeed);
-                transform.position = Vector3.Lerp(transform.position, pivot.position + pivot.TransformDirection(offsetVector), Time.deltaTime * offsetSpeed);
-            }
-            yield return null;
-        }
-
-        reseting = false;
-
-        if (time >= resetTime)
-            m_MouseOriented = false;
-
     }
 
     // MULTI-WORLD FUNCTIONS

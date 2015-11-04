@@ -28,10 +28,6 @@ public class Player : AbstractMultiWorld
     private float jumpForce = 8.8f;
     [SerializeField]
     private float gravityMultiplier = 0.7f;
-    [SerializeField]
-    private float rotateSensitivity = 100f;
-    //public GameObject barPrefab;
-    //public GameObject uiSeedPrefab;
     public Vector3 foxCamOffset = new Vector3(0, 1f, -1.5f);
     public Vector3 humCamOffset = new Vector3(0, 1.5f, -2.5f);
     // Fox Customizeable Variables
@@ -193,22 +189,32 @@ public class Player : AbstractMultiWorld
     /// </summary>
     private IEnumerator DefaultUpdate()
     {
-        state = State.Default;        
+        state = State.Default;
         while (state == State.Default)
-        {   
+        {
             // Read Inputs
             float h = Input.GetAxis("Horizontal");
             float v = Input.GetAxis("Vertical");
 
             if (!climbing)
             {
-                transform.Rotate(h * Vector3.up * Time.deltaTime * rotateSensitivity);
+                transform.LookAt(transform.position + h * cam.transform.right + v * cam.transform.forward);
+                transform.localEulerAngles = new Vector3(0, transform.localEulerAngles.y);
 
                 if (control.isGrounded)
                 {
-                    Vector3 direction = camScript.mouseOriented ? transform.forward : cam.transform.forward;
+                    float dir = 0;
 
-                    move = v * direction * speed;
+                    if (h < 0) h += 2;
+                    if (v < 0) v += 2;
+
+                    if (h != 0 && v != 0)
+                        dir = v > h ? v : h;
+                    else
+                        dir = h + v;
+
+                    move = dir * Vector3.forward * speed;
+                    move = transform.TransformDirection(move);
 
                     if (jump)
                     {
@@ -419,7 +425,7 @@ public class Player : AbstractMultiWorld
     {
         base.InitToggleWorlds();
         StopCoroutine(current);
-        state = State.Transitioning;        
+        state = State.Transitioning;
         ProgressBar(new ProgressEventArgs("CASTING", transitionTime));
         StartCoroutine(OnToggleWorlds());
     }
@@ -462,6 +468,8 @@ public class Player : AbstractMultiWorld
             camScript.offsetVector = foxCamOffset;
 
             AddSpiritBall();
+            AddSpiritBall();
+            AddSpiritBall();
         }
 
         EndTransition();
@@ -481,7 +489,7 @@ public class Player : AbstractMultiWorld
         float maxTime = transitionTime;
 
         while (onTransition && time < maxTime)
-        {          
+        {
             time += Time.deltaTime;
             yield return null;
         }
