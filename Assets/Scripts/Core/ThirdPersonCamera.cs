@@ -44,15 +44,6 @@ public class ThirdPersonCamera : AbstractMultiWorld
         get { return GetComponent<Vortex>(); }
     }
 
-    // Object Variables
-    private bool m_MouseOriented;
-
-    // Public Reference Variables
-    public bool mouseOriented
-    {
-        get { return m_MouseOriented; }
-    }
-
     private void Start()
     {
         transform.position = target.position + target.TransformDirection(offsetVector);
@@ -67,7 +58,7 @@ public class ThirdPersonCamera : AbstractMultiWorld
     private void FixedUpdate()
     {
         UpdatePivot();
-
+        
         transform.localPosition = offsetVector;
 
         Vector3 newPos = Vector3.zero;

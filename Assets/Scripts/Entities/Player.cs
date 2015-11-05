@@ -15,10 +15,15 @@ public class Player : AbstractMultiWorld
     }
 
     // Player Events
+    public delegate void UpdateHealthHandler(float healthRatio);
+    public static event UpdateHealthHandler HealthUpdate;
     public delegate void ProgressBarHandler(ProgressEventArgs progressEvent);
     public static event ProgressBarHandler ProgressBar;
     public delegate void ItemHandler(ItemEventArgs itemEvent);
     public static event ItemHandler ItemHold;
+
+    // Constants
+    public const int MAX_HEALTH = 100;
 
     // Customizeable Variables
     [Header("Player Variables")]
@@ -69,6 +74,10 @@ public class Player : AbstractMultiWorld
     {
         get { return GetComponent<CharacterController>(); }
     }
+    private SkinnedMeshRenderer mesh
+    {
+        get { return GetComponentInChildren<SkinnedMeshRenderer>(); }
+    }
 
     // Fox Reference Variables
     private Vector3 spiritSlotBase
@@ -88,9 +97,11 @@ public class Player : AbstractMultiWorld
     private State state;
     private Coroutine current;
     private Vector3 move;
+    private Collider targetClimb;
     private bool jump;
     private bool climbing;
-    private Collider targetClimb;
+    private bool invulnerable;
+    private int health;
     // Fox Variables
     private List<GameObject> spiritBalls = new List<GameObject>();
     private bool seed;
@@ -111,6 +122,7 @@ public class Player : AbstractMultiWorld
     private void Awake()
     {
         current = StartCoroutine(DefaultUpdate());
+        health = MAX_HEALTH;
     }
 
     /// <summary>
@@ -153,7 +165,18 @@ public class Player : AbstractMultiWorld
         if (onTransition)
             manager.SendMessage("BroadcastToggleWorlds", "AbortToggleWorlds");
 
-        print("Took " + amount + " damage");
+        if (!invulnerable)
+        {
+            health -= amount;
+
+            if (health <= 0)
+            {
+                health = 0;
+                // Die
+            }
+
+            HealthUpdate((float)health / MAX_HEALTH);
+        }
     }
 
     /// <summary>

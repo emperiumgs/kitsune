@@ -3,12 +3,16 @@ using System.Collections;
 
 public class MonkeyFruit : MonoBehaviour 
 {
+    private bool damageable = true;
+    private int damage = 10;
+    private float fadeTime = 5f;
+
     /// <summary>
     /// Auto-destroy after some time
     /// </summary>
     private void Awake()
     {
-        Destroy(gameObject, 5f);
+        Destroy(gameObject, fadeTime);
     }
 
     /// <summary>
@@ -17,10 +21,10 @@ public class MonkeyFruit : MonoBehaviour
     /// <param name="other">The other collider</param>
     private void OnCollisionEnter(Collision other)
     {
-        if (other.gameObject.tag == "Player")
+        if (damageable && other.gameObject.tag == "Player")
         {
-            other.gameObject.SendMessage("TakeDamage", 1);
-            Destroy(gameObject);
+            other.gameObject.SendMessage("TakeDamage", damage);
+            damageable = false;
         }
     }
 

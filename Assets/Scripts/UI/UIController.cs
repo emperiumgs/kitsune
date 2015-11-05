@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UIController : MonoBehaviour
 {
@@ -6,17 +7,33 @@ public class UIController : MonoBehaviour
     public GameObject progressBarPrefab;
     public GameObject seedPrefab;
 
+    // Reference Variables
+    private Slider health
+    {
+        get { return transform.FindChild("Health").GetComponent<Slider>(); }
+    }
+
     // Object Variables
     private ProgressBar progressBar;
     private GameObject seed;
 
-    private void Start()
+    private void Awake()
     {
+        // Player HUD Event Listeners
+        Player.HealthUpdate += UpdatePlayerHealth;
         Player.ProgressBar += UpdateProgressBar;
-        Player.ItemHold += UpdatePlayerItems;
-    }    
+        Player.ItemHold += UpdatePlayerItems;        
+    }
 
-    // Progress Bar Event Handler
+    // EVENT HANDLERS
+
+    // Player Health
+    private void UpdatePlayerHealth(float healthRatio)
+    {
+        health.value = healthRatio;
+    }
+
+    // Progress Bar
     private void UpdateProgressBar(ProgressEventArgs progressEvent)
     {
         if (progressEvent == null)
@@ -30,7 +47,7 @@ public class UIController : MonoBehaviour
         }
     }
 
-    // Player Items Event Handler
+    // Player Items
     private void UpdatePlayerItems(ItemEventArgs itemEvent)
     {
         if (itemEvent.get)
