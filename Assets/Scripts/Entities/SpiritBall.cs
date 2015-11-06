@@ -6,7 +6,7 @@ public class SpiritBall : MonoBehaviour
 {
     // Customizeable Variables
     [Range(125, 225)]
-    public int velocityMultiplier = 180;
+    public int velocityMultiplier = 200;
 
     // Reference Variables
     private Rigidbody rb
@@ -26,11 +26,11 @@ public class SpiritBall : MonoBehaviour
     private Vector3 target;
     private bool damageable;
 
-    private void OnCollisionEnter(Collision other)
+    private void OnTriggerEnter(Collider other)
     {
-        if (damageable && other.gameObject.tag != "Player")
+        if (damageable && other.tag != "Player")
         {
-            other.gameObject.SendMessage("TakeDamage", transform.position, SendMessageOptions.DontRequireReceiver);
+            other.SendMessage("TakeDamage", transform.position, SendMessageOptions.DontRequireReceiver);
 
             Destroy(gameObject);
         }
@@ -38,15 +38,14 @@ public class SpiritBall : MonoBehaviour
 
     private void Shoot()
     {
-        col.isTrigger = false;
         rb.isKinematic = false;
 
-        target = transform.parent.position + transform.parent.TransformDirection(0, 0.5f, 2);
-        Vector3 force = target - transform.position;
-        transform.parent = null;
+        target = transform.parent.parent.position + transform.parent.parent.TransformDirection(0, 0.5f, 2);
+        transform.LookAt(target);
 
-        rb.velocity = force * Time.deltaTime * velocityMultiplier;
-        //rb.MovePosition(target);
+        transform.SetParent(null);
+
+        rb.velocity = transform.TransformDirection(Vector3.forward) * Time.deltaTime * velocityMultiplier;
 
         damageable = true;
 

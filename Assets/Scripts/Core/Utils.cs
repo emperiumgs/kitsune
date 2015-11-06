@@ -35,4 +35,10 @@ public class Utils
         }
         return false;
     }
+
+    public static void PrintArray<T>(T[] array)
+    {
+        foreach (T item in array)
+            Debug.Log(item.ToString());
+    }
 }

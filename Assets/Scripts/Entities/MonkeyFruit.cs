@@ -1,10 +1,10 @@
 using UnityEngine;
 using System.Collections;
 
-public class MonkeyFruit : MonoBehaviour 
+public class MonkeyFruit : MonoBehaviour
 {
     private bool damageable = true;
-    private int damage = 10;
+    private int damage = 100;
     private float fadeTime = 5f;
 
     /// <summary>
@@ -21,10 +21,12 @@ public class MonkeyFruit : MonoBehaviour
     /// <param name="other">The other collider</param>
     private void OnCollisionEnter(Collision other)
     {
-        if (damageable && other.gameObject.tag == "Player")
+        if (damageable)
         {
-            other.gameObject.SendMessage("TakeDamage", damage);
             damageable = false;
+
+            if (other.gameObject.tag == "Player")
+                other.gameObject.SendMessage("TakeDamage", damage);
         }
     }
 

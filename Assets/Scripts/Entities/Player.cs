@@ -12,11 +12,14 @@ public class Player : AbstractMultiWorld
         Transitioning,
         Dodging,
         Hit,
+        Dying
     }
 
     // Player Events
     public delegate void UpdateHealthHandler(float healthRatio);
     public static event UpdateHealthHandler HealthUpdate;
+    public delegate void DeathHandler(Player dead);
+    public static event DeathHandler Death;
     public delegate void ProgressBarHandler(ProgressEventArgs progressEvent);
     public static event ProgressBarHandler ProgressBar;
     public delegate void ItemHandler(ItemEventArgs itemEvent);
@@ -33,17 +36,13 @@ public class Player : AbstractMultiWorld
     private float jumpForce = 8.8f;
     [SerializeField]
     private float gravityMultiplier = 0.7f;
+    [SerializeField]
+    private float invulnerableTime = 2f;
     public Vector3 foxCamOffset = new Vector3(0, 1f, -1.5f);
     public Vector3 humCamOffset = new Vector3(0, 1.5f, -2.5f);
     // Fox Customizeable Variables
     [Header("Fox Variables")]
-    public GameObject spiritBallPrefab;
-    [SerializeField]
-    private Vector3 spiritSlotHeight;
-    [SerializeField]
-    private Vector3 spiritSlotYOffset;
-    [SerializeField]
-    private Vector3 spiritSlotXOffset;
+    public GameObject spiritBallPrefab;    
     [Range(0.5f, 5)]
     public float spiritRespawnTime = 1;
     [Range(0.1f, 1f)]
@@ -53,23 +52,7 @@ public class Player : AbstractMultiWorld
     [Range(0.05f, 0.5f)]
     public float dodgeGrav = 0.2f;
 
-    // Reference Variables (read-only)
-    private GameManager manager
-    {
-        get { return GameManager.instance; }
-    }
-    private Camera cam
-    {
-        get { return Camera.main; }
-    }
-    private ThirdPersonCamera camScript
-    {
-        get { return cam.GetComponent<ThirdPersonCamera>(); }
-    }
-    private Animator anim
-    {
-        get { return GetComponent<Animator>(); }
-    }
+    // Reference Variables (read-only)    
     private CharacterController control
     {
         get { return GetComponent<CharacterController>(); }
@@ -78,32 +61,36 @@ public class Player : AbstractMultiWorld
     {
         get { return GetComponentInChildren<SkinnedMeshRenderer>(); }
     }
-
-    // Fox Reference Variables
-    private Vector3 spiritSlotBase
+    private ThirdPersonCamera camScript
     {
-        get { return transform.position + transform.TransformDirection(spiritSlotHeight); }
+        get { return cam.GetComponent<ThirdPersonCamera>(); }
     }
-    private Vector3 spiritSlotLeft
+    private GameManager manager
     {
-        get { return spiritSlotBase - transform.TransformDirection(2 * spiritSlotYOffset - spiritSlotXOffset); }
+        get { return GameManager.instance; }
     }
-    private Vector3 spiritSlotRight
+    private Animator anim
     {
-        get { return spiritSlotBase - transform.TransformDirection(2 * spiritSlotYOffset + spiritSlotXOffset); }
+        get { return GetComponent<Animator>(); }
+    }
+    private Camera cam
+    {
+        get { return Camera.main; }
     }
 
     // Object Variables
     private State state;
-    private Coroutine current;
+    private Transform spawnPoint;
+    private Coroutine current;    
+    private Collider targetClimb;    
     private Vector3 move;
-    private Collider targetClimb;
     private bool jump;
     private bool climbing;
     private bool invulnerable;
     private int health;
     // Fox Variables
-    private List<GameObject> spiritBalls = new List<GameObject>();
+    private List<GameObject> spiritBalls = new List<GameObject>(3);
+    private Transform[] spiritSlots = new Transform[3];
     private bool seed;
 
     // Public Object variables
@@ -123,6 +110,9 @@ public class Player : AbstractMultiWorld
     {
         current = StartCoroutine(DefaultUpdate());
         health = MAX_HEALTH;
+
+        for (int i = 0; i < spiritSlots.Length; i++)
+            spiritSlots[i] = transform.FindChild("SpiritBall" + (i + 1));
     }
 
     /// <summary>
@@ -172,8 +162,10 @@ public class Player : AbstractMultiWorld
             if (health <= 0)
             {
                 health = 0;
-                // Die
+                Die();
             }
+            else
+                StartCoroutine(HitProtection());
 
             HealthUpdate((float)health / MAX_HEALTH);
         }
@@ -184,7 +176,7 @@ public class Player : AbstractMultiWorld
     /// </summary>
     private void BranchHit(Vector3 dir)
     {
-        if (state != State.Hit)
+        if (!invulnerable && state != State.Hit)
         {
             TakeDamage(10);
             StopCoroutine(current);
@@ -321,6 +313,49 @@ public class Player : AbstractMultiWorld
         current = StartCoroutine(DefaultUpdate());
     }
 
+    /// <summary>
+    /// Makes the player invulnerable to damage for a while and gives a damage feedback
+    /// </summary>
+    private IEnumerator HitProtection()
+    {
+        invulnerable = true;
+        float time = 0;
+        mesh.material.color = Color.red;
+        while (invulnerable && time < invulnerableTime)
+        {
+            time += Time.deltaTime;
+            mesh.material.color = Color.red + time/invulnerableTime * (Color.white - Color.red);
+            yield return null;
+        }
+        invulnerable = false;
+    }
+
+    /// <summary>
+    /// Sends the event of dying to the listeners
+    /// </summary>
+    private void Die()
+    {
+        StopCoroutine(current);
+        current = null;
+        state = State.Dying;
+        invulnerable = true;
+        // Will send the event to the UI, and then it will report back when needed
+        Death(this);        
+    }
+
+    /// <summary>
+    /// Gets back control and returns to the last spawnPoint
+    /// </summary>
+    private void Respawn()
+    {
+        transform.position = Vector3.zero;
+        transform.rotation = Quaternion.identity;
+        health = MAX_HEALTH;
+        HealthUpdate(health / MAX_HEALTH);
+        invulnerable = false;
+        current = StartCoroutine(DefaultUpdate());
+    }
+
     // Seed-Bindweed Content
 
     /// <summary>
@@ -377,12 +412,7 @@ public class Player : AbstractMultiWorld
     {
         GameObject spiritBall = Instantiate(spiritBallPrefab);
         spiritBalls.Add(spiritBall);
-
-        int i = spiritBalls.IndexOf(spiritBall);
-        spiritBalls[i].transform.parent = transform;
-        spiritBalls[i].transform.rotation = transform.rotation;
-
-        RepositionSpiritBalls();
+        spiritBall.transform.SetParent(spiritSlots[spiritBalls.IndexOf(spiritBall)], false);
     }
 
     /// <summary>
@@ -390,20 +420,10 @@ public class Player : AbstractMultiWorld
     /// </summary>
     private void RepositionSpiritBalls()
     {
-        switch (spiritBalls.Count)
+        for (int i = 0; i < spiritBalls.Count; i++)
         {
-            case 1:
-                spiritBalls[0].transform.position = spiritSlotBase;
-                break;
-            case 2:
-                spiritBalls[0].transform.position = spiritSlotLeft + spiritSlotYOffset;
-                spiritBalls[1].transform.position = spiritSlotRight + spiritSlotYOffset;
-                break;
-            case 3:
-                spiritBalls[0].transform.position = spiritSlotLeft;
-                spiritBalls[1].transform.position = spiritSlotRight;
-                spiritBalls[2].transform.position = spiritSlotBase;
-                break;
+            if (spiritBalls[i] != null)
+                spiritBalls[i].transform.SetParent(spiritSlots[i], false);
         }
     }
 
@@ -490,9 +510,8 @@ public class Player : AbstractMultiWorld
 
             camScript.offsetVector = foxCamOffset;
 
-            AddSpiritBall();
-            AddSpiritBall();
-            AddSpiritBall();
+            foreach (Transform item in spiritSlots)            
+                AddSpiritBall();            
         }
 
         EndTransition();

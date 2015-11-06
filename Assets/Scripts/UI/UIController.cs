@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 
 public class UIController : MonoBehaviour
 {
@@ -12,6 +13,10 @@ public class UIController : MonoBehaviour
     {
         get { return transform.FindChild("Health").GetComponent<Slider>(); }
     }
+    private Image fader
+    {
+        get { return transform.FindChild("Fader").GetComponent<Image>(); }
+    }
 
     // Object Variables
     private ProgressBar progressBar;
@@ -21,9 +26,10 @@ public class UIController : MonoBehaviour
     {
         // Player HUD Event Listeners
         Player.HealthUpdate += UpdatePlayerHealth;
+        Player.Death += PlayerDeath;
         Player.ProgressBar += UpdateProgressBar;
         Player.ItemHold += UpdatePlayerItems;        
-    }
+    }    
 
     // EVENT HANDLERS
 
@@ -31,6 +37,36 @@ public class UIController : MonoBehaviour
     private void UpdatePlayerHealth(float healthRatio)
     {
         health.value = healthRatio;
+    }
+
+    // Player Death
+    private void PlayerDeath(Player dead)
+    {
+        StartCoroutine(DeathFade(dead));
+    }
+    private IEnumerator DeathFade(Player dead)
+    {
+        fader.gameObject.SetActive(true);
+        float fadeTime = 3f;
+        float time = 0;
+
+        // Fade to white
+        while (time < fadeTime)
+        {
+            time += Time.deltaTime;
+            fader.color = new Color(1, 1, 1, time / fadeTime);
+            yield return null;
+        }
+        dead.SendMessage("Respawn");
+        time = 0;
+        // Fade to clear
+        while (time < fadeTime)
+        {
+            time += Time.deltaTime;
+            fader.color = new Color(1, 1, 1, (1 - time / fadeTime));
+            yield return null;
+        }
+        fader.gameObject.SetActive(false);
     }
 
     // Progress Bar
