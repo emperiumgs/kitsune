@@ -510,7 +510,7 @@ public class Player : AbstractMultiWorld
 
             camScript.offsetVector = foxCamOffset;
 
-            foreach (Transform item in spiritSlots)            
+            for (int i = 0; i < spiritSlots.Length; i++)            
                 AddSpiritBall();            
         }
 

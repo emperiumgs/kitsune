@@ -28,9 +28,9 @@ public class SpiritBall : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (damageable && other.tag != "Player")
+        if (damageable && other.tag == "Enemy")
         {
-            other.SendMessage("TakeDamage", transform.position, SendMessageOptions.DontRequireReceiver);
+            other.SendMessage("TakeDamage", transform.position);
 
             Destroy(gameObject);
         }

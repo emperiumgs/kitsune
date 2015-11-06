@@ -2,7 +2,6 @@ using UnityEngine;
 using System.Collections;
 using System;
 
-[RequireComponent(typeof(SphereCollider))]
 [RequireComponent(typeof(NavMeshAgent))]
 public class Ghoul : AbstractMultiWorld
 {
@@ -34,14 +33,14 @@ public class Ghoul : AbstractMultiWorld
     public float attackCooldown = 1.5f;
     [Header("Entity Properties")]
     [SerializeField]
-    private float damage = 1;
+    private float damage = 10;
     [SerializeField]
     private float health = 3;
 
     // Reference Variables
     private SphereCollider sightArea
     {
-        get { return GetComponent<SphereCollider>(); }
+        get { return GetComponentInChildren<SphereCollider>(); }
     }
     private NavMeshAgent nav
     {
@@ -52,6 +51,10 @@ public class Ghoul : AbstractMultiWorld
         get { return GetComponentInChildren<BoxCollider>(); }
     }
     // <Prototype Purposes>
+    private MeshRenderer bodyMesh
+    {
+        get { return transform.FindChild("Body").GetComponent<MeshRenderer>(); }
+    }
     private MeshRenderer armMesh
     {
         get { return transform.FindChild("Arm").GetComponent<MeshRenderer>(); }
@@ -64,6 +67,7 @@ public class Ghoul : AbstractMultiWorld
 
     // Object Variables
     private State state;
+    private Coroutine hitRoutine;
     private Vector3 initialPoint;
 
     private void Awake()
@@ -107,6 +111,7 @@ public class Ghoul : AbstractMultiWorld
     /// <param name="location">The location where the damage were inflicted</param>
     private void TakeDamage(Vector3 location)
     {
+        print(name);
         if (health >= 0)
         {
             health --;
@@ -114,6 +119,10 @@ public class Ghoul : AbstractMultiWorld
                 StartCoroutine(Die());
             else
             {
+                if (hitRoutine != null)
+                    StopCoroutine(hitRoutine);
+                hitRoutine = StartCoroutine(HitFeedback());
+
                 if (state < State.Searching)
                 {
                     state = State.Wandering;
@@ -245,6 +254,22 @@ public class Ghoul : AbstractMultiWorld
         }
 
         Destroy(gameObject);
+    }
+
+    /// <summary>
+    /// Paints the body renderer as red to give a hit feedback
+    /// </summary>
+    private IEnumerator HitFeedback()
+    {
+        bodyMesh.material.color = Color.red;
+        float time = 0;
+        while (time < 1f)
+        {
+            time += Time.deltaTime;
+            bodyMesh.material.color = new Color((1 - time / 0.5f), time / 0.5f, 0);
+            yield return null;
+        }
+        bodyMesh.material.color = Color.green;
     }
 
     /// <summary>
