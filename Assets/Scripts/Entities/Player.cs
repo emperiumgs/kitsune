@@ -261,6 +261,7 @@ public class Player : AbstractMultiWorld
                     control.Move(move * Time.deltaTime);
                 else
                 {
+                    print(this);
                     control.Move(-targetClimb.transform.up / 2);
                     ToggleClimb(null);
                 }
@@ -391,13 +392,16 @@ public class Player : AbstractMultiWorld
     /// </summary>
     private void ToggleClimb(Collider target)
     {
-        climbing = !climbing;
+        if (target == null)
+            climbing = false;
+        else
+            climbing = true;
         // Am I climbing?
         if (climbing)
         {
             targetClimb = target;
             Vector3 climbPos = target.transform.position + target.transform.TransformDirection(Vector3.up / 4);
-            climbPos.y = transform.position.y + 0.1f;
+            climbPos.y = transform.position.y + 0.1f ;
             transform.LookAt(transform.position + target.transform.TransformDirection(Vector3.down));
             transform.position = climbPos;
         }

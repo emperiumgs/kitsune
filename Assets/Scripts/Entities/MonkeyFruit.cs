@@ -4,7 +4,7 @@ using System.Collections;
 public class MonkeyFruit : MonoBehaviour
 {
     private bool damageable = true;
-    private int damage = 100;
+    private int damage = 10;
     private float fadeTime = 5f;
 
     /// <summary>
