@@ -51,6 +51,8 @@ public class Player : AbstractMultiWorld
     public float dodgeForce = 2.4f;
     [Range(0.05f, 0.5f)]
     public float dodgeGrav = 0.2f;
+    [Range(0.5f, 2f)]
+    public float dodgeCooldown = 1f;
 
     // Reference Variables (read-only)    
     private CharacterController control
@@ -79,21 +81,23 @@ public class Player : AbstractMultiWorld
     }
 
     // Object Variables
-    private State state;
-    private Transform spawnPoint;
+    private State state;    
     private Coroutine current;    
     private Collider targetClimb;    
     private Vector3 move;
     private bool jump;
     private bool climbing;
     private bool invulnerable;
+    private bool interaction;
     private int health;
     // Fox Variables
     private List<GameObject> spiritBalls = new List<GameObject>(3);
     private Transform[] spiritSlots = new Transform[3];
+    private bool dodgeable = true;
     private bool seed;
 
     // Public Object variables
+    public Transform spawnPoint { get; internal set; }
     public bool grounded
     {
         get { return control.isGrounded; }
@@ -124,26 +128,48 @@ public class Player : AbstractMultiWorld
         {
             if (control.isGrounded && !climbing && !onTransition)
             {
+                // Toggle Worlds
                 if (Input.GetButtonDown("Toggle Worlds"))
                     manager.SendMessage("BroadcastToggleWorlds", "InitToggleWorlds");
 
+                // Jump
                 if (Input.GetButtonDown("Jump"))
                     jump = true;
 
+                // Fox specific inputs
                 if (spiritRealm)
                 {
-                    if (spiritBalls.Count > 0 && Input.GetButtonDown("Attack"))
+                    // Attack
+                    if (!interaction && spiritBalls.Count > 0 && Input.GetButtonDown("Attack"))
                         ShootSpiritBall();
 
-                    int dodge = (int)Input.GetAxis("Dodge");
-                    if (dodge != 0)
+                    // Dodge
+                    if (dodgeable)
                     {
-                        StopCoroutine(current);
-                        current = StartCoroutine(OnDodging(dodge));
+                        int dodge = (int)Input.GetAxis("Dodge");
+                        if (dodge != 0)
+                        {
+                            StopCoroutine(current);
+                            current = StartCoroutine(OnDodging(dodge));
+                        }
                     }
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// Toggles interaction if the other is interactable
+    /// </summary>
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.tag == "Interactable")
+            interaction = true;
+    }
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.tag == "Interactable")
+            interaction = false;
     }
 
     /// <summary>
@@ -185,6 +211,81 @@ public class Player : AbstractMultiWorld
     }
 
     /// <summary>
+    /// Default player movement
+    /// </summary>
+    private void MoveDefault()
+    {
+        // Read Inputs
+        float h = Input.GetAxis("Horizontal");
+        float v = Input.GetAxis("Vertical");
+
+        transform.LookAt(transform.position + h * cam.transform.right + v * cam.transform.forward);
+        transform.localEulerAngles = new Vector3(0, transform.localEulerAngles.y);
+
+        if (control.isGrounded)
+        {
+            float dir = 0;
+
+            // Negative directions
+            if (h < 0) h = Mathf.Abs(h);
+            if (v < 0) v = Mathf.Abs(v);
+
+            if (h != 0 && v != 0)
+                dir = v > h ? v : h;
+            else
+                dir = h + v;
+
+            move = dir * Vector3.forward * speed;
+            move = transform.TransformDirection(move);
+
+            if (jump)
+            {
+                move.y = jumpForce;
+                jump = false;
+            }
+        }
+
+        move.y -= gravityMultiplier;
+
+        control.Move(move * Time.deltaTime);
+
+        anim.SetBool("OnGround", control.isGrounded);
+
+        if (Physics.Raycast(transform.position, Vector3.down, control.stepOffset))
+            anim.SetBool("OnGround", true);
+
+        if (!control.isGrounded)
+        {
+            anim.SetFloat("Jump", move.y);
+        }
+
+        if (!onTransition)
+            anim.SetFloat("Forward", transform.InverseTransformDirection(move).z, 0.1f, Time.deltaTime);
+        else
+            anim.SetFloat("Forward", 0);
+    }
+
+    /// <summary>
+    /// Climbing player movement
+    /// </summary>
+    private void MoveClimb()
+    {
+        // Read Inputs
+        float h = Input.GetAxis("Horizontal");
+        float v = Input.GetAxis("Vertical");
+
+        move = h * Vector3.right + v * Vector3.up;
+        move = transform.TransformDirection(move);
+        if (targetClimb != null)
+            control.Move(move * Time.deltaTime);
+        else
+        {
+            control.Move(-(targetClimb.transform.position - transform.position).normalized);
+            ToggleClimb(null);
+        }
+    }
+
+    /// <summary>
     /// Enters in cinematic mode disabling inputs and movement
     /// </summary>
     /// <param name="enter">Should the player enter or exit the cinematic mode?</param>
@@ -207,65 +308,10 @@ public class Player : AbstractMultiWorld
         state = State.Default;
         while (state == State.Default)
         {
-            // Read Inputs
-            float h = Input.GetAxis("Horizontal");
-            float v = Input.GetAxis("Vertical");
-
             if (!climbing)
-            {
-                transform.LookAt(transform.position + h * cam.transform.right + v * cam.transform.forward);
-                transform.localEulerAngles = new Vector3(0, transform.localEulerAngles.y);
-
-                if (control.isGrounded)
-                {
-                    float dir = 0;
-
-                    if (h < 0) h += 2;
-                    if (v < 0) v += 2;
-
-                    if (h != 0 && v != 0)
-                        dir = v > h ? v : h;
-                    else
-                        dir = h + v;
-
-                    move = dir * Vector3.forward * speed;
-                    move = transform.TransformDirection(move);
-
-                    if (jump)
-                    {
-                        move.y = jumpForce;
-                        jump = false;
-                    }
-                }
-
-                move.y -= gravityMultiplier;
-
-                control.Move(move * Time.deltaTime);
-
-                anim.SetBool("OnGround", control.isGrounded);
-                if (!control.isGrounded)
-                {
-                    anim.SetFloat("Jump", move.y);
-                }
-
-                if (!onTransition)
-                    anim.SetFloat("Forward", transform.InverseTransformDirection(move).z, 0.1f, Time.deltaTime);
-                else
-                    anim.SetFloat("Forward", 0);
-            }
+                MoveDefault();
             else
-            {
-                move = h * Vector3.right + v * Vector3.up;
-                move = transform.TransformDirection(move);
-                if (move == Vector3.zero || targetClimb.bounds.Contains(transform.position))
-                    control.Move(move * Time.deltaTime);
-                else
-                {
-                    print(this);
-                    control.Move(-targetClimb.transform.up / 2);
-                    ToggleClimb(null);
-                }
-            }
+                MoveClimb();
             yield return new WaitForFixedUpdate();
         }
     }
@@ -277,6 +323,7 @@ public class Player : AbstractMultiWorld
     private IEnumerator OnDodging(int dir)
     {
         state = State.Dodging;
+        dodgeable = false;
         Vector3 target = transform.TransformDirection(dir * Vector3.right);
         float time = 0;
         target.y = dodgeForce * dodgeTime;
@@ -291,6 +338,16 @@ public class Player : AbstractMultiWorld
         }
 
         current = StartCoroutine(DefaultUpdate());
+        StartCoroutine(DodgeCooldown());
+    }
+
+    /// <summary>
+    /// Enables dodging after a cooldown
+    /// </summary>
+    private IEnumerator DodgeCooldown()
+    {
+        yield return new WaitForSeconds(dodgeCooldown);
+        dodgeable = true;
     }
 
     /// <summary>
@@ -390,20 +447,25 @@ public class Player : AbstractMultiWorld
     /// <summary>
     /// Grabs the bindweed, and stops using gravity
     /// </summary>
-    private void ToggleClimb(Collider target)
+    public void ToggleClimb(Collider target)
     {
-        if (target == null)
-            climbing = false;
-        else
-            climbing = true;
-        // Am I climbing?
-        if (climbing)
+        if (!spiritRealm)
         {
-            targetClimb = target;
-            Vector3 climbPos = target.transform.position + target.transform.TransformDirection(Vector3.up / 4);
-            climbPos.y = transform.position.y + 0.1f ;
-            transform.LookAt(transform.position + target.transform.TransformDirection(Vector3.down));
-            transform.position = climbPos;
+            if (target == null)
+                climbing = false;
+            else
+                climbing = true;
+            // Am I climbing?
+            if (climbing)
+            {
+                print("hang on to " + target.name);
+                targetClimb = target;
+                Vector3 climbPos = transform.position + target.transform.TransformDirection(Vector3.down) * 0.2f;
+                climbPos.y = transform.position.y + 0.1f;
+                // Look forward
+                transform.LookAt(transform.position + target.transform.TransformDirection(Vector3.down));
+                transform.position = climbPos;
+            }
         }
     }
 

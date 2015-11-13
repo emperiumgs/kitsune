@@ -26,13 +26,15 @@ public class Bindweed : AbstractMultiWorld
     /// Toggles the climbing state of the player
     /// </summary>
     /// <param name="other"></param>
-    private void OnTriggerStay(Collider other)
+    private void OnTriggerEnter(Collider other)
     {
         if (other.tag == "Player")
-        {
-            if (Input.GetButtonDown("Action"))
-                other.SendMessage("ToggleClimb", col);
-        }
+            other.GetComponent<Player>().ToggleClimb(col);
+    }
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.tag == "Player")
+            other.GetComponent<Player>().ToggleClimb(null);
     }
 
     /// <summary>

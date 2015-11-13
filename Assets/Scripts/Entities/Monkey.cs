@@ -235,8 +235,8 @@ public class Monkey : MonoBehaviour
         Monkey clone1 = Instantiate(gameObject).GetComponent<Monkey>();
         Monkey clone2 = Instantiate(gameObject).GetComponent<Monkey>();
         // Move the clones each to one side
-        clone1.TriggerMove(transform.position + Vector3.right * 2, false, false);
-        clone2.TriggerMove(transform.position + Vector3.left * 2, false, false);
+        clone1.TriggerMove(transform.position + transform.TransformDirection(Vector3.right) * 2, false, false);
+        clone2.TriggerMove(transform.position + transform.TransformDirection(Vector3.left) * 2, false, false);
         yield return new WaitForSeconds(3f);
         // Phase 3: Talk again
         print("I'm gonna kill you");

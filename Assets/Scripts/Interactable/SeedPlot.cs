@@ -10,16 +10,16 @@ public class SeedPlot : MonoBehaviour
     private Player player;
     private bool done;
 
-    private void OnTriggerStay(Collider other)
+    private void OnTriggerEnter(Collider other)
     {
         if (!done && other.tag == "Player")
         {
             player = other.GetComponent<Player>();
 
-            if (player.hasSeed && Input.GetButtonDown("Action"))
+            if (player.hasSeed)
             {
                 other.SendMessage("DropSeed");
-                bindweed.growable = true;           
+                bindweed.growable = true;
                 done = true;
             }
         }

@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections;
 
 [RequireComponent(typeof(BoxCollider))]
-public class Encounter : MonoBehaviour
+public class Encounter : Trigger
 {
     [Header("Encounter Options")]
     // Customizeable Variables
@@ -10,21 +10,12 @@ public class Encounter : MonoBehaviour
     public int quantity;    
 
     // Reference Variables
-    private BoxCollider col
-    {
-        get { return GetComponent<BoxCollider>(); }
-    }
-    private Vector3 gizmoCube
-    {
-        get { return new Vector3(col.size.x, col.size.y, col.size.z); }
-    }
     private EncounterSpawnpoint[] spawnpoints
     {
         get { return GetComponentsInChildren<EncounterSpawnpoint>(); }
     }
 
-    // Object Variables
-    private Color gizmoColor = new Color(1, 0.5f, 0.08f, 0.3f); // Transparent Yellowed Red
+    // Object Variables     
     private GameObject[] enemies;
     private bool triggered;
     
@@ -111,14 +102,5 @@ public class Encounter : MonoBehaviour
     {
         if (!triggered && other.tag == "Player")
             TriggerEncounter();
-    }
-
-    /// <summary>
-    /// Draws a visible object to interact in the scene editor
-    /// </summary>
-    private void OnDrawGizmos()
-    {
-        Gizmos.color = gizmoColor;
-        Gizmos.DrawCube(transform.position + Vector3.up / 2, gizmoCube);
     }
 }

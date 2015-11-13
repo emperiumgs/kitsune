@@ -7,7 +7,7 @@ public class SeedBush : MonoBehaviour
     {
         if (other.tag == "Player")
         {
-            if (Input.GetButtonDown("Action"))
+            if (Input.GetButtonDown("Attack"))
                 other.SendMessage("TakeSeed");
         }
     }
