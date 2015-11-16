@@ -4,7 +4,7 @@ using System.Collections;
 public class SeedPlot : MonoBehaviour
 {
     // Customizeable Variables
-    public Bindweed bindweed;
+    public Bindweed[] bindweeds;
 
     // Object Variables
     private Player player;
@@ -19,7 +19,8 @@ public class SeedPlot : MonoBehaviour
             if (player.hasSeed)
             {
                 other.SendMessage("DropSeed");
-                bindweed.growable = true;
+                foreach (Bindweed item in bindweeds)
+                    item.growable = true;
                 done = true;
             }
         }

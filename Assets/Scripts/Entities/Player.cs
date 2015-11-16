@@ -155,6 +155,14 @@ public class Player : AbstractMultiWorld
                     }
                 }
             }
+            if (climbing)
+            {
+                if (Input.GetButtonDown("Jump"))
+                {
+                    targetClimb.SendMessage("Drop");
+                    ToggleClimb(null);
+                }
+            }
         }
     }
 
@@ -205,7 +213,8 @@ public class Player : AbstractMultiWorld
         if (!invulnerable && state != State.Hit)
         {
             TakeDamage(10);
-            StopCoroutine(current);
+            if (current != null)
+                StopCoroutine(current);
             current = StartCoroutine(OnBranchHit(dir));
         }
     }
@@ -274,13 +283,19 @@ public class Player : AbstractMultiWorld
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
 
-        move = h * Vector3.right + v * Vector3.up;
+        move = h * Vector3.right * speed/2 + v * Vector3.up * speed/2;
         move = transform.TransformDirection(move);
+        if (targetClimb is MeshCollider)
+        {
+            transform.LookAt(targetClimb.transform.position);
+            transform.localEulerAngles = new Vector3(0, transform.localEulerAngles.y, 0);
+        }
         if (targetClimb != null)
             control.Move(move * Time.deltaTime);
         else
         {
             control.Move(-(targetClimb.transform.position - transform.position).normalized);
+            targetClimb.SendMessage("Drop");
             ToggleClimb(null);
         }
     }
@@ -393,7 +408,8 @@ public class Player : AbstractMultiWorld
     /// </summary>
     private void Die()
     {
-        StopCoroutine(current);
+        if (current != null)
+            StopCoroutine(current);
         current = null;
         state = State.Dying;
         invulnerable = true;
@@ -406,8 +422,16 @@ public class Player : AbstractMultiWorld
     /// </summary>
     private void Respawn()
     {
-        transform.position = Vector3.zero;
-        transform.rotation = Quaternion.identity;
+        if (spawnPoint == null)
+        {
+            transform.position = Vector3.zero;
+            transform.rotation = Quaternion.identity;
+        }
+        else
+        {
+            transform.position = spawnPoint.position;
+            transform.rotation = spawnPoint.rotation;
+        }
         health = MAX_HEALTH;
         HealthUpdate(health / MAX_HEALTH);
         invulnerable = false;
@@ -460,11 +484,24 @@ public class Player : AbstractMultiWorld
             {
                 print("hang on to " + target.name);
                 targetClimb = target;
-                Vector3 climbPos = transform.position + target.transform.TransformDirection(Vector3.down) * 0.2f;
-                climbPos.y = transform.position.y + 0.1f;
-                // Look forward
-                transform.LookAt(transform.position + target.transform.TransformDirection(Vector3.down));
-                transform.position = climbPos;
+                Vector3 climbPos;
+                if (target is BoxCollider)
+                {
+                    climbPos = transform.position + target.transform.TransformDirection(Vector3.down) * 0.2f;
+                    climbPos.y = transform.position.y + 0.1f;
+                    // Look forward
+                    transform.LookAt(transform.position + target.transform.TransformDirection(Vector3.down));                    
+                }
+                else
+                {
+                    Vector3 dif = target.transform.position - transform.position;
+                    dif.y = 0;
+                    climbPos = transform.position + dif;
+                    transform.LookAt(target.transform.position);
+                    transform.localEulerAngles = new Vector3(0, transform.localEulerAngles.y, 0);
+                }
+                //transform.position = climbPos;
+                control.Move(climbPos - transform.position);
             }
         }
     }

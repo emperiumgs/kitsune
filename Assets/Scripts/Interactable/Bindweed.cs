@@ -10,17 +10,18 @@ public class Bindweed : AbstractMultiWorld
     // Reference Variables
     private MeshRenderer ren
     {
-        get { return GetComponent<MeshRenderer>(); }
+        get { return GetComponentInParent<MeshRenderer>(); }
     }
-    private BoxCollider col
+    private Collider col
     {
-        get { return GetComponent<BoxCollider>(); }
+        get { return GetComponent<Collider>(); }
     }
 
     // Object Variables
     [HideInInspector]
     public bool growable;
     private bool growed;
+    private bool climbeable;
 
     /// <summary>
     /// Toggles the climbing state of the player
@@ -28,13 +29,22 @@ public class Bindweed : AbstractMultiWorld
     /// <param name="other"></param>
     private void OnTriggerEnter(Collider other)
     {
-        if (other.tag == "Player")
+        if (climbeable && other.tag == "Player")
             other.GetComponent<Player>().ToggleClimb(col);
     }
     private void OnTriggerExit(Collider other)
     {
-        if (other.tag == "Player")
+        if (climbeable && other.tag == "Player")
             other.GetComponent<Player>().ToggleClimb(null);
+    }
+
+    /// <summary>
+    /// Stops being climbeable for a while
+    /// </summary>
+    private void Drop()
+    {
+        climbeable = false;
+        StartCoroutine(Cooldown());
     }
 
     /// <summary>
@@ -44,6 +54,7 @@ public class Bindweed : AbstractMultiWorld
     {
         float time = 0;
         ren.enabled = true;
+        climbeable = true;
         col.enabled = true;
         Color initColor = ren.material.color;
 
@@ -55,6 +66,15 @@ public class Bindweed : AbstractMultiWorld
         }
 
         growed = true;        
+    }
+
+    /// <summary>
+    /// Makes it climbeable again after a short time
+    /// </summary>
+    private IEnumerator Cooldown()
+    {
+        yield return new WaitForSeconds(growTime);
+        climbeable = true;
     }
 
     // Multi-World Content

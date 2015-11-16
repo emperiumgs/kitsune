@@ -3,7 +3,6 @@ using System.Collections;
 
 public class MonkeyFruit : MonoBehaviour
 {
-    private bool damageable = true;
     private int damage = 10;
     private float fadeTime = 5f;
 
@@ -21,12 +20,13 @@ public class MonkeyFruit : MonoBehaviour
     /// <param name="other">The other collider</param>
     private void OnCollisionEnter(Collision other)
     {
-        if (damageable)
+        if (other.gameObject.layer != LayerMask.NameToLayer("Ignore Raycast") &&
+            other.gameObject.tag != "Enemy")
         {
-            damageable = false;
-
             if (other.gameObject.tag == "Player")
                 other.gameObject.SendMessage("TakeDamage", damage);
+
+            Destroy(gameObject);
         }
     }
 
@@ -37,6 +37,17 @@ public class MonkeyFruit : MonoBehaviour
     public void ToTarget(Vector3 target)
     {
         Vector3 dir = target - transform.position;
-        GetComponent<Rigidbody>().velocity = Utils.RigidbodySpeedTo(dir.x, dir.magnitude - transform.position.y + target.y, dir.z);
+        //GetComponent<Rigidbody>().velocity = Utils.RigidbodySpeedTo(dir.x, Mathf.Abs(dir.y), dir.z);
+
+        float g = Physics.gravity.magnitude;
+
+        //float maxHeight = Mathf.Abs(dir.y/2);
+        //float ySpeed = Mathf.Sqrt(2 * g * (maxHeight >= 1 ? maxHeight : 1));
+        //float time = 2 * ySpeed / g;
+        float time = Mathf.Sqrt(2 * Mathf.Abs(dir.y) / g);
+        float xSpeed = dir.x / time;
+        float zSpeed = dir.z / time;
+
+        GetComponent<Rigidbody>().velocity = new Vector3(xSpeed, 0, zSpeed);
     }
 }

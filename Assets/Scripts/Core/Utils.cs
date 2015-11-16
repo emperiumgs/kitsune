@@ -13,7 +13,7 @@ public class Utils
     public static Vector3 RigidbodySpeedTo(float targetX, float maxHeight, float targetZ)
     {
         float g = Physics.gravity.magnitude;
-        float ySpeed = Mathf.Sqrt(2 * g * maxHeight);
+        float ySpeed = Mathf.Sqrt(2 * g * (maxHeight >= 1 ? maxHeight : 1));
         float time = 2 * ySpeed / g;
         float xSpeed = targetX / time;
         float zSpeed = targetZ / time;
