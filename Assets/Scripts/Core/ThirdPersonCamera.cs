@@ -52,12 +52,13 @@ public class ThirdPersonCamera : AbstractMultiWorld
 
     private void LateUpdate()
     {
-        ControlRotation();        
+        //ControlRotation();        
     }
 
     private void FixedUpdate()
     {
         UpdatePivot();
+        ControlRotation();
         
         transform.localPosition = offsetVector;
 

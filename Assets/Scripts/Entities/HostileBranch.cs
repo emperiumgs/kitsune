@@ -4,7 +4,7 @@ using System.Collections;
 public class HostileBranch : MonoBehaviour
 {
     // Static Variables
-    public static float rotationSpeed = 200f;
+    public static float rotationSpeed = 150f;
 
     // Customizeable Variables
     [Range(0, 90f)]
@@ -12,10 +12,15 @@ public class HostileBranch : MonoBehaviour
     [Range(-90f, 0)]
     public float minAngle = -45f;
 
-    private void Awake()
+    private void Start()
     {
         transform.parent.localRotation = Quaternion.AngleAxis(Random.Range(minAngle, maxAngle), Vector3.right);
 
+        Monkey.ActivateBranches += Activate;        
+    }
+
+    private void Activate()
+    {
         bool random = true;
         if (Random.value > 0.5f)
             random = false;

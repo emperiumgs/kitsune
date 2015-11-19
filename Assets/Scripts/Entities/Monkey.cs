@@ -13,7 +13,10 @@ public class Monkey : MonoBehaviour
         Dying
     }
 
-    private static Monkey main;
+    public delegate void BranchesActivationHandler();
+    public static event BranchesActivationHandler ActivateBranches;
+
+    public static Monkey main;
     private static bool[] deadClones = new bool[2];
     private static bool doneTalk = false;
 
@@ -84,7 +87,7 @@ public class Monkey : MonoBehaviour
         StopCoroutine("ThrowFruit");
         StopCoroutine(current);
         if (Utils.FindBool(deadClones, false))
-        {
+        {            
             if (deadClones[0] == false)
                 deadClones[0] = true;
             else if (deadClones[1] == false)
@@ -228,12 +231,13 @@ public class Monkey : MonoBehaviour
             // Talk to the player
             print("I like bananas");
             yield return null;
+            ActivateBranches();
             // End Phase 1
             talking = false;
         }
         // Phase 2: Split into three
-        Monkey clone1 = Instantiate(gameObject).GetComponent<Monkey>();
-        Monkey clone2 = Instantiate(gameObject).GetComponent<Monkey>();
+        Monkey clone1 = ((GameObject)Instantiate(gameObject, transform.position, transform.rotation)).GetComponent<Monkey>();
+        Monkey clone2 = ((GameObject)Instantiate(gameObject, transform.position, transform.rotation)).GetComponent<Monkey>();
         // Move the clones each to one side
         clone1.TriggerMove(transform.position + transform.TransformDirection(Vector3.right) * 2, false, false);
         clone2.TriggerMove(transform.position + transform.TransformDirection(Vector3.left) * 2, false, false);

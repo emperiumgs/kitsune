@@ -4,18 +4,38 @@ using System.Collections;
 
 public class UIController : MonoBehaviour
 {
+    // Fade enum
+    public enum FadeType
+    {
+        In, // Clear to Black
+        Out, // Black to Clear
+        InOut // Clear to Black to Clear
+    }
+
     // Customizeable Variables
     public GameObject progressBarPrefab;
     public GameObject seedPrefab;
 
     // Reference Variables
+    private GameObject gameInterface
+    {
+        get { return transform.FindChild("GameInterface").gameObject; }
+    }
+    private GameObject animInterface
+    {
+        get { return transform.FindChild("CinematicInterface").gameObject; }
+    }
     private Slider health
     {
-        get { return transform.FindChild("Health").GetComponent<Slider>(); }
+        get { return gameInterface.transform.FindChild("Health").GetComponent<Slider>(); }
+    }
+    private Image animFader
+    {
+        get { return animInterface.transform.FindChild("Fader").GetComponent<Image>(); }
     }
     private Image fader
     {
-        get { return transform.FindChild("Fader").GetComponent<Image>(); }
+        get { return gameInterface.transform.FindChild("Fader").GetComponent<Image>(); }
     }
 
     // Object Variables
@@ -28,8 +48,55 @@ public class UIController : MonoBehaviour
         Player.HealthUpdate += UpdatePlayerHealth;
         Player.Death += PlayerDeath;
         Player.ProgressBar += UpdateProgressBar;
-        Player.ItemHold += UpdatePlayerItems;        
-    }    
+        Player.ItemHold += UpdatePlayerItems;
+    }
+
+    /// <summary>
+    /// Toggles the appearing UI between cinematic and game
+    /// </summary>
+    public void ToggleCinematic(bool toCinematic)
+    {
+        gameInterface.SetActive(!toCinematic);
+        animInterface.SetActive(toCinematic);
+    }
+
+    /// <summary>
+    /// Enables the cinematic fader with options
+    /// </summary>
+    /// <param name="fadeTime">The duration of the fade</param>
+    /// <param name="type">The fade type</param>
+    /// <param name="origin">The origin cinematic to respond</param>
+    public void CinematicFade(float fadeTime, FadeType type, Cinematic origin)
+    {
+        if (type != FadeType.InOut)
+            origin.SendMessage("OnTransition");
+        StartCoroutine(CinematicFading(fadeTime, type, origin));
+    }
+    private IEnumerator CinematicFading(float fadeTime, FadeType type, Cinematic origin)
+    {
+        float time = 0;
+        animFader.gameObject.SetActive(true);
+        animFader.color = type == FadeType.Out ? Color.black : Color.clear;
+        if (type == FadeType.InOut)
+            fadeTime /= 2;
+
+        while (time < fadeTime)
+        {
+            time += Time.deltaTime;
+            animFader.color = type == FadeType.Out ? Color.black * (1 - time / fadeTime) : Color.black * time / fadeTime;
+
+            if (type == FadeType.InOut && time >= fadeTime)
+            {
+                type = FadeType.Out;
+                time = 0;
+                origin.SendMessage("OnTransition");
+            }
+            yield return null;
+        }
+
+        if (origin != null)
+            origin.SendMessage("OnComplete");
+    }
 
     // EVENT HANDLERS
 
@@ -77,7 +144,7 @@ public class UIController : MonoBehaviour
         else
         {
             progressBar = Instantiate(progressBarPrefab).GetComponent<ProgressBar>();
-            progressBar.transform.SetParent(transform, false);
+            progressBar.transform.SetParent(gameInterface.transform, false);
             progressBar.text = progressEvent.text;
             progressBar.StartCoroutine("Running", progressEvent.timer);
         }

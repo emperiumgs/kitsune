@@ -149,7 +149,8 @@ public class Player : AbstractMultiWorld
                         int dodge = (int)Input.GetAxis("Dodge");
                         if (dodge != 0)
                         {
-                            StopCoroutine(current);
+                            if (current != null)
+                                StopCoroutine(current);
                             current = StartCoroutine(OnDodging(dodge));
                         }
                     }
@@ -233,6 +234,9 @@ public class Player : AbstractMultiWorld
 
         if (control.isGrounded)
         {
+            if (move.y <= -19.5f)
+                TakeDamage(10);
+
             float dir = 0;
 
             // Negative directions
@@ -308,7 +312,8 @@ public class Player : AbstractMultiWorld
     {
         if (enter)
         {
-            StopCoroutine(current);
+            if (current != null)
+                StopCoroutine(current);
             state = State.None;
         }
         else
@@ -482,7 +487,6 @@ public class Player : AbstractMultiWorld
             // Am I climbing?
             if (climbing)
             {
-                print("hang on to " + target.name);
                 targetClimb = target;
                 Vector3 climbPos;
                 if (target is BoxCollider)
@@ -570,7 +574,8 @@ public class Player : AbstractMultiWorld
     protected override void InitToggleWorlds()
     {
         base.InitToggleWorlds();
-        StopCoroutine(current);
+        if (current != null)
+            StopCoroutine(current);
         state = State.Transitioning;
         ProgressBar(new ProgressEventArgs("CASTING", transitionTime));
         StartCoroutine(OnToggleWorlds());

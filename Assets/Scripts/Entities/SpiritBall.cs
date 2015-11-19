@@ -28,7 +28,7 @@ public class SpiritBall : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (damageable && other.tag == "Enemy")
+        if (damageable && other.tag == "GhostlyEnemy")
         {
             other.SendMessage("TakeDamage", transform.position);
 
@@ -36,9 +36,21 @@ public class SpiritBall : MonoBehaviour
         }
     }
 
+    private void OnCollisionEnter(Collision other)
+    {
+        print("damaged " + other.gameObject.name);
+        if (damageable && other.gameObject.tag == "Enemy")
+        {
+            other.gameObject.SendMessage("TakeDamage");            
+        }
+
+        Destroy(gameObject);
+    }
+
     private void Shoot()
     {
         rb.isKinematic = false;
+        col.isTrigger = false;
 
         target = transform.parent.parent.position + transform.parent.parent.TransformDirection(0, 0.5f, 2);
         transform.LookAt(target);
