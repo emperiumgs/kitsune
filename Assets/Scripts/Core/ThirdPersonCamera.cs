@@ -20,6 +20,9 @@ public class ThirdPersonCamera : AbstractMultiWorld
     [Range(0.1f, 1)]
     public float targetRedValue = 0.7f;
     public float vortexAngle = 20;
+    public AudioClip transition;
+    public AudioClip tSuccess;
+    public AudioClip tFail;
 
     // Reference Variables
     private Transform pivot
@@ -29,6 +32,10 @@ public class ThirdPersonCamera : AbstractMultiWorld
     private Transform target
     {
         get { return FindObjectOfType<Player>().transform; }
+    }
+    private AudioSource source
+    {
+        get { return GetComponentInParent<AudioSource>(); }
     }
     // Transition
     private Bloom bloom
@@ -111,6 +118,10 @@ public class ThirdPersonCamera : AbstractMultiWorld
             colorCurves.enabled = true;
             StartCoroutine(Soulify());
         }
+
+        source.pitch = Random.Range(0.98f, 1.02f);
+        source.PlayOneShot(transition);
+
         vortex.enabled = true;
     }
 
@@ -122,6 +133,9 @@ public class ThirdPersonCamera : AbstractMultiWorld
         // Vortex disable
         vortex.enabled = false;
         vortex.angle = 0;
+
+        source.pitch = Random.Range(0.98f, 1.02f);
+        source.PlayOneShot(tFail);
 
         // Color correction curves keyframes
         Keyframe blueKey = colorCurves.blueChannel.keys[0];
@@ -159,6 +173,9 @@ public class ThirdPersonCamera : AbstractMultiWorld
             colorCurves.enabled = false;
 
         transform.position = target.position + target.TransformDirection(offsetVector);
+
+        source.pitch = Random.Range(0.98f, 1.02f);
+        source.PlayOneShot(tSuccess);
 
         base.ToggleWorlds();
     }

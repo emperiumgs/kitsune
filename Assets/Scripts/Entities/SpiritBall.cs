@@ -36,6 +36,7 @@ public class SpiritBall : MonoBehaviour
         {
             other.SendMessage("TakeDamage", transform.position);
 
+            Instantiate(hitVFX, transform.position, transform.rotation);
             Destroy(gameObject);
         }
     }

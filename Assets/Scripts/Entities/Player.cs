@@ -583,6 +583,7 @@ public class Player : AbstractMultiWorld
     {
         GameObject spiritBall = Instantiate(spiritBallPrefab);
         spiritBalls.Add(spiritBall);
+        Physics.IgnoreCollision(control, spiritBall.GetComponent<Collider>());
         spiritBall.transform.SetParent(spiritSlots[spiritBalls.IndexOf(spiritBall)], false);
     }
 
@@ -637,7 +638,8 @@ public class Player : AbstractMultiWorld
     /// </summary>
     protected override void InitToggleWorlds()
     {
-        base.InitToggleWorlds();
+        base.InitToggleWorlds();        
+
         if (current != null)
             StopCoroutine(current);
         state = State.Transitioning;
@@ -651,7 +653,8 @@ public class Player : AbstractMultiWorld
     protected override void AbortToggleWorlds()
     {
         base.AbortToggleWorlds();
-        EndTransition();
+        EndTransition();        
+
         StopCoroutine("OnToggleWorlds");
     }
 
@@ -684,7 +687,7 @@ public class Player : AbstractMultiWorld
 
             for (int i = 0; i < spiritSlots.Length; i++)            
                 AddSpiritBall();            
-        }
+        }        
 
         EndTransition();
 
