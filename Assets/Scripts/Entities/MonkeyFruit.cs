@@ -3,6 +3,8 @@ using System.Collections;
 
 public class MonkeyFruit : MonoBehaviour
 {
+    public GameObject splatterVFX;
+
     private int damage = 10;
     private float fadeTime = 5f;
 
@@ -26,6 +28,7 @@ public class MonkeyFruit : MonoBehaviour
             if (other.gameObject.tag == "Player")
                 other.gameObject.SendMessage("TakeDamage", damage);
 
+            Instantiate(splatterVFX, transform.position, transform.rotation);
             Destroy(gameObject);
         }
     }

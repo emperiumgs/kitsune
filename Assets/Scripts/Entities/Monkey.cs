@@ -230,6 +230,7 @@ public class Monkey : MonoBehaviour
             transform.localEulerAngles = new Vector3(0, transform.localEulerAngles.y, 0);
             // Talk to the player
             print("I like bananas");
+            FindObjectOfType<SoundtrackController>().SwitchToTrack("battle", 0);
             yield return null;
             ActivateBranches();
             // End Phase 1

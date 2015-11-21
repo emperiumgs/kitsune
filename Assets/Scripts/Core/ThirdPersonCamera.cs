@@ -50,11 +50,6 @@ public class ThirdPersonCamera : AbstractMultiWorld
         transform.rotation = Quaternion.Euler(0, target.eulerAngles.y, 0);
     }
 
-    private void LateUpdate()
-    {
-        //ControlRotation();        
-    }
-
     private void FixedUpdate()
     {
         UpdatePivot();
@@ -83,10 +78,6 @@ public class ThirdPersonCamera : AbstractMultiWorld
     private void UpdatePivot()
     {
         pivot.position = Vector3.Lerp(pivot.position, target.position, Time.deltaTime * offsetSpeed);
-        // Smoother rotation
-        //pivot.rotation = Quaternion.Lerp(pivot.rotation, target.rotation, Time.deltaTime * offsetSpeed);
-        //if (!m_MouseOriented)
-        //    pivot.rotation = target.rotation;
     }
 
     /// <summary>

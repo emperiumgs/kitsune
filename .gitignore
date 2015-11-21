@@ -35,9 +35,13 @@ Thumbs.db
 # =================== #
 Assets/Materials/
 Assets/Models/
+Assets/Resources/
+Assets/Sounds/
 Assets/Standard Assets/
 Assets/Textures/
 Assets/Materials.meta
 Assets/Models.meta
+Assets/Resources.meta
 Assets/Standard Assets.meta
+Assets/Sounds.meta
 Assets/Textures.meta

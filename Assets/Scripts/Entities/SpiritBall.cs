@@ -1,12 +1,12 @@
 using UnityEngine;
 using System.Collections;
-using System;
 
 public class SpiritBall : MonoBehaviour
 {
     // Customizeable Variables
     [Range(125, 225)]
     public int velocityMultiplier = 200;
+    public GameObject hitVFX;
 
     // Reference Variables
     private Rigidbody rb
@@ -16,6 +16,10 @@ public class SpiritBall : MonoBehaviour
     private SphereCollider col
     {
         get { return GetComponent<SphereCollider>(); }
+    }
+    private AudioSource source
+    {
+        get { return GetComponent<AudioSource>(); }
     }
     private Light lightHalo
     {
@@ -38,12 +42,12 @@ public class SpiritBall : MonoBehaviour
 
     private void OnCollisionEnter(Collision other)
     {
-        print("damaged " + other.gameObject.name);
         if (damageable && other.gameObject.tag == "Enemy")
         {
             other.gameObject.SendMessage("TakeDamage");            
         }
 
+        Instantiate(hitVFX, transform.position, transform.rotation);
         Destroy(gameObject);
     }
 
@@ -56,6 +60,9 @@ public class SpiritBall : MonoBehaviour
         transform.LookAt(target);
 
         transform.SetParent(null);
+
+        source.pitch = Random.Range(0.97f, 1.03f);
+        source.Play();
 
         rb.velocity = transform.TransformDirection(Vector3.forward) * Time.deltaTime * velocityMultiplier;
 

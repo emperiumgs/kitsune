@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.Collections;
-using System;
 
 [RequireComponent(typeof(NavMeshAgent))]
 public class Ghoul : AbstractMultiWorld
@@ -36,6 +35,7 @@ public class Ghoul : AbstractMultiWorld
     private float damage = 10;
     [SerializeField]
     private float health = 3;
+    public AudioClip atkSwing;
 
     // Reference Variables
     private SphereCollider sightArea
@@ -49,6 +49,10 @@ public class Ghoul : AbstractMultiWorld
     private BoxCollider attackCol
     {
         get { return GetComponentInChildren<BoxCollider>(); }
+    }
+    private AudioSource source
+    {
+        get { return GetComponent<AudioSource>(); }
     }
     // <Prototype Purposes>
     private MeshRenderer bodyMesh
@@ -230,6 +234,9 @@ public class Ghoul : AbstractMultiWorld
 
         if (state == State.Attacking)
         {
+            source.pitch = Random.Range(0.95f, 1.05f);
+            source.PlayOneShot(atkSwing);
+
             if (attackCol.bounds.Intersects(targetCol.bounds))
                 target.SendMessage("TakeDamage", damage);
             yield return new WaitForSeconds(attackCooldown);

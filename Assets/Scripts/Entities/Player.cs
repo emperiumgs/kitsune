@@ -4,6 +4,14 @@ using System.Collections.Generic;
 
 public class Player : AbstractMultiWorld
 {
+    // Walkable Surface
+    public enum Surface
+    {
+        None,
+        Grass,
+        Water,
+        Wood
+    }
     // Player States
     private enum State
     {
@@ -30,6 +38,8 @@ public class Player : AbstractMultiWorld
 
     // Customizeable Variables
     [Header("Player Variables")]
+    [HideInInspector]
+    public Surface surface;
     [SerializeField]
     private float speed = 3.5f;
     [SerializeField]
@@ -40,6 +50,11 @@ public class Player : AbstractMultiWorld
     private float invulnerableTime = 2f;
     public Vector3 foxCamOffset = new Vector3(0, 1f, -1.5f);
     public Vector3 humCamOffset = new Vector3(0, 1.5f, -2.5f);
+    public AudioClip climb;
+    public AudioClip damage;
+    public AudioClip walkGrass;
+    public AudioClip walkWater;
+    public AudioClip walkWood;
     // Fox Customizeable Variables
     [Header("Fox Variables")]
     public GameObject spiritBallPrefab;    
@@ -53,6 +68,8 @@ public class Player : AbstractMultiWorld
     public float dodgeGrav = 0.2f;
     [Range(0.5f, 2f)]
     public float dodgeCooldown = 1f;
+    public AudioClip foxDamage;
+    public AudioClip getSeed;
 
     // Reference Variables (read-only)    
     private CharacterController control
@@ -66,6 +83,10 @@ public class Player : AbstractMultiWorld
     private ThirdPersonCamera camScript
     {
         get { return cam.GetComponent<ThirdPersonCamera>(); }
+    }
+    private AudioSource source
+    {
+        get { return GetComponent<AudioSource>(); }
     }
     private GameManager manager
     {
@@ -81,10 +102,11 @@ public class Player : AbstractMultiWorld
     }
 
     // Object Variables
-    private State state;    
+    private State state;   
     private Coroutine current;    
     private Collider targetClimb;    
     private Vector3 move;
+    private float walkTime = 1f;
     private bool jump;
     private bool climbing;
     private bool invulnerable;
@@ -114,6 +136,7 @@ public class Player : AbstractMultiWorld
     {
         current = StartCoroutine(DefaultUpdate());
         health = MAX_HEALTH;
+        surface = Surface.Grass;
 
         for (int i = 0; i < spiritSlots.Length; i++)
             spiritSlots[i] = transform.FindChild("SpiritBall" + (i + 1));
@@ -194,6 +217,10 @@ public class Player : AbstractMultiWorld
         {
             health -= amount;
 
+            source.pitch = Random.Range(0.95f, 1.05f);
+            AudioClip clip = spiritRealm ? foxDamage : damage;
+            source.PlayOneShot(clip);
+
             if (health <= 0)
             {
                 health = 0;
@@ -251,6 +278,31 @@ public class Player : AbstractMultiWorld
             move = dir * Vector3.forward * speed;
             move = transform.TransformDirection(move);
 
+            // Play walk sound
+            if (move.magnitude > 0.3f && walkTime > 0.3f)
+            {
+                walkTime = 0;
+                source.pitch = Random.Range(0.95f, 1.05f);
+                AudioClip clip;
+                switch (surface)
+                {
+                    case Surface.Grass:
+                        clip = walkGrass;
+                        break;
+                    case Surface.Water:
+                        clip = walkWater;
+                        break;
+                    case Surface.Wood:
+                        clip = walkWood;
+                        break;
+                    default:
+                        clip = null;
+                        break;
+                }
+                source.PlayOneShot(clip);
+            }
+            walkTime += Time.fixedDeltaTime;
+
             if (jump)
             {
                 move.y = jumpForce;
@@ -295,7 +347,17 @@ public class Player : AbstractMultiWorld
             transform.localEulerAngles = new Vector3(0, transform.localEulerAngles.y, 0);
         }
         if (targetClimb != null)
+        {
+            if (move.magnitude > 0.3f && walkTime > 0.3f)
+            {
+                walkTime = 0;
+                source.pitch = Random.Range(0.95f, 1.05f);
+                source.PlayOneShot(climb);
+            }
+            walkTime += Time.fixedDeltaTime;
+
             control.Move(move * Time.deltaTime);
+        }
         else
         {
             control.Move(-(targetClimb.transform.position - transform.position).normalized);
@@ -456,8 +518,10 @@ public class Player : AbstractMultiWorld
             {
                 seed = true;
                 ItemHold(new ItemEventArgs("seed"));
+
+                source.pitch = Random.Range(0.95f, 1.05f);
+                source.PlayOneShot(getSeed);
             }
-            // Play sound
         }
     }
 

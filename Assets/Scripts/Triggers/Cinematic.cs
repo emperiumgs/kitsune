@@ -29,6 +29,7 @@ public class Cinematic : Trigger
         if (other.tag == "Player")
         {
             m_Cam.gameObject.SetActive(true);
+            Camera.main.GetComponent<AudioListener>().enabled = false;
             player = other.GetComponent<Player>();
             player.CinematicMode(true);
             ui.ToggleCinematic(true);
@@ -44,7 +45,8 @@ public class Cinematic : Trigger
         if (phase == lastPhase)
         {
             player.CinematicMode(false);
-            Destroy(m_Cam.gameObject);            
+            Destroy(m_Cam.gameObject);
+            Camera.main.GetComponent<AudioListener>().enabled = true;
         }
     }
 
