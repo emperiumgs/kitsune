@@ -76,9 +76,13 @@ public class Player : AbstractMultiWorld
     {
         get { return GetComponent<CharacterController>(); }
     }
-    private SkinnedMeshRenderer mesh
+    private MeshRenderer mesh
     {
-        get { return GetComponentInChildren<SkinnedMeshRenderer>(); }
+        get { return GetComponentInChildren<MeshRenderer>(); }
+    }
+    private MeshFilter filter
+    {
+        get { return GetComponentInChildren<MeshFilter>(); }
     }
     private ThirdPersonCamera camScript
     {
@@ -92,10 +96,10 @@ public class Player : AbstractMultiWorld
     {
         get { return GameManager.instance; }
     }
-    private Animator anim
+    /*private Animator anim
     {
         get { return GetComponent<Animator>(); }
-    }
+    }*/
     private Camera cam
     {
         get { return Camera.main; }
@@ -109,9 +113,11 @@ public class Player : AbstractMultiWorld
     private float walkTime = 1f;
     private bool jump;
     private bool climbing;
-    private bool invulnerable;
+    [HideInInspector]
+    public bool invulnerable;
     private bool interaction;
-    private int health;
+    [HideInInspector]
+    public int health;
     // Fox Variables
     private List<GameObject> spiritBalls = new List<GameObject>(3);
     private Transform[] spiritSlots = new Transform[3];
@@ -314,7 +320,7 @@ public class Player : AbstractMultiWorld
 
         control.Move(move * Time.deltaTime);
 
-        anim.SetBool("OnGround", control.isGrounded);
+        /*anim.SetBool("OnGround", control.isGrounded);
 
         if (Physics.Raycast(transform.position, Vector3.down, control.stepOffset))
             anim.SetBool("OnGround", true);
@@ -327,7 +333,7 @@ public class Player : AbstractMultiWorld
         if (!onTransition)
             anim.SetFloat("Forward", transform.InverseTransformDirection(move).z, 0.1f, Time.deltaTime);
         else
-            anim.SetFloat("Forward", 0);
+            anim.SetFloat("Forward", 0);*/
     }
 
     /// <summary>
@@ -409,12 +415,12 @@ public class Player : AbstractMultiWorld
         Vector3 target = transform.TransformDirection(dir * Vector3.right);
         float time = 0;
         target.y = dodgeForce * dodgeTime;
-        anim.SetBool("OnGround", false);
+        //anim.SetBool("OnGround", false);
         while (time < dodgeTime && state == State.Dodging)
         {
             time += Time.deltaTime;
             target.y -= dodgeGrav * dodgeTime;
-            anim.SetFloat("Jump", target.y);
+            //anim.SetFloat("Jump", target.y);
             control.Move(target * Time.deltaTime / dodgeTime);
             yield return null;
         }
@@ -441,11 +447,11 @@ public class Player : AbstractMultiWorld
         dir *= 8;
         dir.y = jumpForce / 2;
         float y = transform.position.y;
-        anim.SetBool("OnGround", false);
+        //anim.SetBool("OnGround", false);
         while ((dir.y > y || !control.isGrounded) && state == State.Hit)
         {
             dir.y -= gravityMultiplier;
-            anim.SetFloat("Jump", dir.y);
+            //anim.SetFloat("Jump", dir.y);
             control.Move(dir * Time.deltaTime);
             yield return null;
         }
@@ -668,8 +674,11 @@ public class Player : AbstractMultiWorld
         // Toggle the active body
         if (spiritRealm)
         {
-            // Prototyping purposes
-            transform.localScale = Vector3.one;
+            filter.mesh = Resources.Load<Mesh>("Models/Entities/shinno");
+            mesh.material = Resources.Load<Material>("Materials/Entities/shinno");
+            control.center = new Vector3(0, 0.8f, 0);
+            control.radius = 0.35f;
+            control.height = 1.6f;            
 
             camScript.offsetVector = humCamOffset;
 
@@ -680,8 +689,11 @@ public class Player : AbstractMultiWorld
         }
         else
         {
-            // Prototyping purposes
-            transform.localScale = Vector3.one / 2;
+            filter.mesh = Resources.Load<Mesh>("Models/Entities/fox");
+            mesh.material = Resources.Load<Material>("Materials/Entities/fox");
+            control.center = new Vector3(0, 0.4f, 0);
+            control.radius = 0.4f;
+            control.height = 0.8f;
 
             camScript.offsetVector = foxCamOffset;
 

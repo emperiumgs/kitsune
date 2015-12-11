@@ -194,6 +194,7 @@ public class Monkey : MonoBehaviour
         print("I'm dead, you win");
         yield return new WaitForSeconds(2f);
         Destroy(gameObject);
+        Application.LoadLevel(3);
     }
 
     /// <summary>
@@ -202,7 +203,7 @@ public class Monkey : MonoBehaviour
     private IEnumerator CloneDeath()
     {
         state = State.Dying;
-        GetComponent<BoxCollider>().enabled = false;
+        GetComponent<Collider>().enabled = false;
         Material mat = GetComponent<MeshRenderer>().material;
 
         while (state == State.Dying && mat.color.a > 0)

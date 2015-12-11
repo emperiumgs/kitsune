@@ -15,6 +15,9 @@ public class UIController : MonoBehaviour
     // Customizeable Variables
     public GameObject progressBarPrefab;
     public GameObject seedPrefab;
+    public Sprite comHealth;
+    public Sprite lowHealth;
+    public Sprite seedUI;
 
     // Reference Variables
     private GameObject gameInterface
@@ -25,9 +28,9 @@ public class UIController : MonoBehaviour
     {
         get { return transform.FindChild("CinematicInterface").gameObject; }
     }
-    private Slider health
+    private Transform health
     {
-        get { return gameInterface.transform.FindChild("Health").GetComponent<Slider>(); }
+        get { return gameInterface.transform.FindChild("Health").FindChild("Fill"); }
     }
     private Image animFader
     {
@@ -103,7 +106,16 @@ public class UIController : MonoBehaviour
     // Player Health
     private void UpdatePlayerHealth(float healthRatio)
     {
-        health.value = healthRatio;
+        health.localScale = healthRatio * (Vector3.one * 0.75f) + (Vector3.one * 0.25f);
+        if (healthRatio < 0.3f)
+            health.GetComponent<Image>().sprite = lowHealth;
+        else
+            health.GetComponent<Image>().sprite = comHealth;
+
+        if (healthRatio == 0)
+            health.gameObject.SetActive(false);
+        else
+            health.gameObject.SetActive(true);
     }
 
     // Player Death
@@ -158,7 +170,8 @@ public class UIController : MonoBehaviour
             if (itemEvent.itemName == "seed")
             {
                 seed = Instantiate(seedPrefab);
-                seed.transform.SetParent(transform, false);
+                seed.transform.SetParent(gameInterface.transform, false);
+                seed.GetComponent<Image>().sprite = seedUI;
             }
         }
         else

@@ -14,7 +14,7 @@ public class HostileBranch : MonoBehaviour
 
     private void Start()
     {
-        transform.parent.localRotation = Quaternion.AngleAxis(Random.Range(minAngle, maxAngle), Vector3.right);
+        transform.localRotation = Quaternion.AngleAxis(Random.Range(minAngle, maxAngle), Vector3.right);
 
         Monkey.ActivateBranches += Activate;        
     }
@@ -39,7 +39,7 @@ public class HostileBranch : MonoBehaviour
 
     private IEnumerator Rotate(bool onward)
     {        
-        float initX = transform.parent.eulerAngles.x;
+        float initX = transform.eulerAngles.x;
         Vector3 curAngles = Vector3.zero;
 
         curAngles.x = initX > 270 ? initX - 360 : initX;
@@ -49,7 +49,7 @@ public class HostileBranch : MonoBehaviour
             while (curAngles.x < maxAngle)
             {
                 curAngles.x += Time.deltaTime * rotationSpeed;
-                transform.parent.localRotation = Quaternion.Euler(curAngles);
+                transform.localRotation = Quaternion.Euler(curAngles);
                 yield return null;
             }
         }
@@ -58,7 +58,7 @@ public class HostileBranch : MonoBehaviour
             while (curAngles.x > minAngle)
             {
                 curAngles.x -= Time.deltaTime * rotationSpeed;
-                transform.parent.localRotation = Quaternion.Euler(curAngles);
+                transform.localRotation = Quaternion.Euler(curAngles);
                 yield return null;
             }
         }

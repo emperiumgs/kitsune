@@ -8,7 +8,7 @@ public class Menu : MonoBehaviour
     /// </summary>
     public void NewGame()
     {
-        Application.LoadLevel(1);
+        Application.LoadLevel(2);
     }
 
     /// <summary>

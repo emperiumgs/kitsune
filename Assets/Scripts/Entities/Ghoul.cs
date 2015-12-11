@@ -54,20 +54,10 @@ public class Ghoul : AbstractMultiWorld
     {
         get { return GetComponent<AudioSource>(); }
     }
-    // <Prototype Purposes>
     private MeshRenderer bodyMesh
     {
         get { return transform.FindChild("Body").GetComponent<MeshRenderer>(); }
     }
-    private MeshRenderer armMesh
-    {
-        get { return transform.FindChild("Arm").GetComponent<MeshRenderer>(); }
-    }
-    private MeshRenderer[] renderers
-    {
-        get { return GetComponentsInChildren<MeshRenderer>(true); }
-    }
-    // </Prototype Purposes>
 
     // Object Variables
     private State state;
@@ -115,12 +105,14 @@ public class Ghoul : AbstractMultiWorld
     /// <param name="location">The location where the damage were inflicted</param>
     private void TakeDamage(Vector3 location)
     {
-        print(name);
         if (health >= 0)
         {
             health --;
             if (health == 0)
+            {
+                StopAllCoroutines();
                 StartCoroutine(Die());
+            }
             else
             {
                 if (hitRoutine != null)
@@ -131,7 +123,7 @@ public class Ghoul : AbstractMultiWorld
                 {
                     state = State.Wandering;
                     nav.destination = location;
-                }                    
+                }
             }
 ;        }
     }
@@ -220,17 +212,9 @@ public class Ghoul : AbstractMultiWorld
     {
         state = State.Attacking;
         nav.destination = transform.position;
-        Color initColor = armMesh.material.color; // Prototype Feedback
         Collider targetCol = target.GetComponent<Collider>();
-        float time = 0;
-        float percentage = 0;
-        while(state == State.Attacking && time < attackDelay)
-        {
-            time += Time.deltaTime;
-            percentage = time / attackDelay;
-            armMesh.material.color = initColor * (1 - percentage) + Color.red * percentage; // Prototype Feedback
-            yield return null;
-        }
+
+        yield return new WaitForSeconds(attackDelay);
 
         if (state == State.Attacking)
         {
@@ -242,7 +226,6 @@ public class Ghoul : AbstractMultiWorld
             yield return new WaitForSeconds(attackCooldown);
             StartCoroutine(Search(target.transform));         
         }
-        armMesh.material.color = initColor;
     }
 
     /// <summary>
@@ -273,10 +256,10 @@ public class Ghoul : AbstractMultiWorld
         while (time < 1f)
         {
             time += Time.deltaTime;
-            bodyMesh.material.color = new Color((1 - time / 0.5f), time / 0.5f, 0);
+            bodyMesh.material.color = Color.Lerp(bodyMesh.material.color, Color.white, Time.deltaTime);
             yield return null;
         }
-        bodyMesh.material.color = Color.green;
+        bodyMesh.material.color = Color.white;
     }
 
     /// <summary>
@@ -310,11 +293,7 @@ public class Ghoul : AbstractMultiWorld
     protected override void ToggleWorlds()
     {
         base.ToggleWorlds();
-
-        for (int i = 0; i < renderers.Length; i++)
-        {
-            renderers[i].enabled = spiritRealm;
-        }
+        bodyMesh.enabled = spiritRealm;
     }
 
     private IEnumerator OnToggleWorlds()
