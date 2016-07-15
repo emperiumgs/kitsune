@@ -33,15 +33,9 @@ Thumbs.db
 # =================== #
 # Unessential Folders #
 # =================== #
-Assets/Materials/
-Assets/Models/
 Assets/Resources/
-Assets/Sounds/
-Assets/Standard Assets/
-Assets/Textures/
-Assets/Materials.meta
-Assets/Models.meta
 Assets/Resources.meta
+Assets/Standard Assets/
 Assets/Standard Assets.meta
-Assets/Sounds.meta
-Assets/Textures.meta
+Assets/Editor/
+Assets/Editor.meta

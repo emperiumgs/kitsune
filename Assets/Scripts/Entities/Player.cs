@@ -55,6 +55,8 @@ public class Player : AbstractMultiWorld
     public AudioClip walkGrass;
     public AudioClip walkWater;
     public AudioClip walkWood;
+    public SkinnedMeshRenderer shinnoRenderer;
+    public Animator shinnoAnim;
     // Fox Customizeable Variables
     [Header("Fox Variables")]
     public GameObject spiritBallPrefab;    
@@ -70,16 +72,15 @@ public class Player : AbstractMultiWorld
     public float dodgeCooldown = 1f;
     public AudioClip foxDamage;
     public AudioClip getSeed;
+    public SkinnedMeshRenderer foxRenderer;
+    public Animator foxAnim;
 
     // Reference Variables (read-only)    
     private CharacterController control
     {
         get { return GetComponent<CharacterController>(); }
     }
-    private MeshRenderer mesh
-    {
-        get { return GetComponentInChildren<MeshRenderer>(); }
-    }
+    private SkinnedMeshRenderer mesh;
     private MeshFilter filter
     {
         get { return GetComponentInChildren<MeshFilter>(); }
@@ -96,10 +97,7 @@ public class Player : AbstractMultiWorld
     {
         get { return GameManager.instance; }
     }
-    /*private Animator anim
-    {
-        get { return GetComponent<Animator>(); }
-    }*/
+    private Animator anim;
     private Camera cam
     {
         get { return Camera.main; }
@@ -143,6 +141,8 @@ public class Player : AbstractMultiWorld
         current = StartCoroutine(DefaultUpdate());
         health = MAX_HEALTH;
         surface = Surface.Grass;
+        anim = shinnoAnim;
+        mesh = shinnoRenderer;
 
         for (int i = 0; i < spiritSlots.Length; i++)
             spiritSlots[i] = transform.FindChild("SpiritBall" + (i + 1));
@@ -283,6 +283,7 @@ public class Player : AbstractMultiWorld
 
             move = dir * Vector3.forward * speed;
             move = transform.TransformDirection(move);
+            anim.SetFloat("speed", move.magnitude);
 
             // Play walk sound
             if (move.magnitude > 0.3f && walkTime > 0.3f)
@@ -313,6 +314,7 @@ public class Player : AbstractMultiWorld
             {
                 move.y = jumpForce;
                 jump = false;
+                anim.SetFloat("speed", 0);
             }
         }
 
@@ -380,6 +382,7 @@ public class Player : AbstractMultiWorld
     {
         if (enter)
         {
+            anim.SetFloat("speed", 0);
             if (current != null)
                 StopCoroutine(current);
             state = State.None;
@@ -481,6 +484,7 @@ public class Player : AbstractMultiWorld
     /// </summary>
     private void Die()
     {
+        anim.SetFloat("speed", 0);
         if (current != null)
             StopCoroutine(current);
         current = null;
@@ -543,6 +547,24 @@ public class Player : AbstractMultiWorld
         }
     }
 
+    private void ToggleBody()
+    {
+        if (anim == shinnoAnim)
+        {
+            anim = foxAnim;
+            mesh = foxRenderer;
+            shinnoAnim.gameObject.SetActive(false);
+            foxAnim.gameObject.SetActive(true);
+        }
+        else
+        {
+            anim = shinnoAnim;
+            mesh = shinnoRenderer;
+            shinnoAnim.gameObject.SetActive(true);
+            foxAnim.gameObject.SetActive(false);
+        }
+    }
+
     /// <summary>
     /// Grabs the bindweed, and stops using gravity
     /// </summary>
@@ -554,9 +576,11 @@ public class Player : AbstractMultiWorld
                 climbing = false;
             else
                 climbing = true;
+            anim.SetBool("climb", climbing);
             // Am I climbing?
             if (climbing)
             {
+                anim.SetTrigger("doClimb");
                 targetClimb = target;
                 Vector3 climbPos;
                 if (target is BoxCollider)
@@ -649,6 +673,7 @@ public class Player : AbstractMultiWorld
         if (current != null)
             StopCoroutine(current);
         state = State.Transitioning;
+        anim.SetFloat("speed", 0);
         ProgressBar(new ProgressEventArgs("CASTING", transitionTime));
         StartCoroutine(OnToggleWorlds());
     }
@@ -674,8 +699,6 @@ public class Player : AbstractMultiWorld
         // Toggle the active body
         if (spiritRealm)
         {
-            filter.mesh = Resources.Load<Mesh>("Models/Entities/shinno");
-            mesh.material = Resources.Load<Material>("Materials/Entities/shinno");
             control.center = new Vector3(0, 0.8f, 0);
             control.radius = 0.35f;
             control.height = 1.6f;            
@@ -689,8 +712,6 @@ public class Player : AbstractMultiWorld
         }
         else
         {
-            filter.mesh = Resources.Load<Mesh>("Models/Entities/fox");
-            mesh.material = Resources.Load<Material>("Materials/Entities/fox");
             control.center = new Vector3(0, 0.4f, 0);
             control.radius = 0.4f;
             control.height = 0.8f;
@@ -699,8 +720,8 @@ public class Player : AbstractMultiWorld
 
             for (int i = 0; i < spiritSlots.Length; i++)            
                 AddSpiritBall();            
-        }        
-
+        }
+        ToggleBody();
         EndTransition();
 
         // Destroy the seed

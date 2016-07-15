@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using System.Collections;
 
 public class Monkey : MonoBehaviour
@@ -21,21 +22,21 @@ public class Monkey : MonoBehaviour
     private static bool doneTalk = false;
 
     // Customizeable Variables
+    public SkinnedMeshRenderer mesh;
     public GameObject fruitPrefab;
+    public Transform origin;
     public Transform[] spots = new Transform[3];
+    public Animator anim;
     [Range(0.5f, 5f)]
     public float throwCooldown = 3f;
 
     // Object Variables
     private State state;
+    private Transform target;
     private Coroutine current;
     private Player player;
 
     // Reference Variables
-    private Transform origin
-    {
-        get { return transform.FindChild("Origin"); }
-    }
     private Rigidbody rb
     {
         get { return GetComponent<Rigidbody>(); }
@@ -75,7 +76,8 @@ public class Monkey : MonoBehaviour
         if (doneTalk && state == State.Idle && other.tag == "Player")
         {
             StopCoroutine(current);
-            current = StartCoroutine(EngagedUpdate(other.transform));
+            target = other.transform;
+            current = StartCoroutine(EngagedUpdate());
         }
     }
 
@@ -99,9 +101,21 @@ public class Monkey : MonoBehaviour
         {
             rb.isKinematic = false;
             rb.useGravity = true;
-            Destroy(transform.FindChild("Cloud").gameObject);
+            //Destroy(transform.FindChild("Cloud").gameObject);
             current = StartCoroutine(Death());
         }
+    }
+
+    private void DoThrow()
+    {
+        origin.gameObject.SetActive(false);
+        MonkeyFruit fruit = ((GameObject)Instantiate(fruitPrefab, origin.position, transform.rotation)).GetComponent<MonkeyFruit>();
+        fruit.ToTarget(target.position);
+    }
+
+    private void GetFruit()
+    {
+        origin.gameObject.SetActive(true);
     }
 
     /// <summary>
@@ -159,10 +173,10 @@ public class Monkey : MonoBehaviour
     /// Looks to the player and throw fruits
     /// </summary>
     /// <param name="target">The player transform</param>
-    private IEnumerator EngagedUpdate(Transform target)
+    private IEnumerator EngagedUpdate()
     {
         state = State.Engaged;
-        StartCoroutine("ThrowFruit", target);
+        StartCoroutine("ThrowFruit");
         while (state == State.Engaged)
         {
             transform.LookAt(target);
@@ -175,13 +189,12 @@ public class Monkey : MonoBehaviour
     /// Throws fruits on the target in regular intervals
     /// </summary>
     /// <param name="target">The target to throw at</param>
-    private IEnumerator ThrowFruit(Transform target)
+    private IEnumerator ThrowFruit()
     {
         while (state == State.Engaged)
         {
             yield return new WaitForSeconds(throwCooldown);
-            MonkeyFruit fruit = ((GameObject)Instantiate(fruitPrefab, origin.position, origin.rotation)).GetComponent<MonkeyFruit>();
-            fruit.ToTarget(target.position);
+            anim.SetTrigger("throw");
         }
     }
 
@@ -194,7 +207,7 @@ public class Monkey : MonoBehaviour
         print("I'm dead, you win");
         yield return new WaitForSeconds(2f);
         Destroy(gameObject);
-        Application.LoadLevel(3);
+        SceneManager.LoadScene(3);
     }
 
     /// <summary>
@@ -204,7 +217,7 @@ public class Monkey : MonoBehaviour
     {
         state = State.Dying;
         GetComponent<Collider>().enabled = false;
-        Material mat = GetComponent<MeshRenderer>().material;
+        Material mat = mesh.material;
 
         while (state == State.Dying && mat.color.a > 0)
         {

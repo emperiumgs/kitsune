@@ -36,31 +36,24 @@ public class Ghoul : AbstractMultiWorld
     [SerializeField]
     private float health = 3;
     public AudioClip atkSwing;
+    public SkinnedMeshRenderer bodyMesh;
+    public SphereCollider sightArea;
+    public BoxCollider attackCol;
+    public Animator anim;
 
     // Reference Variables
-    private SphereCollider sightArea
-    {
-        get { return GetComponentInChildren<SphereCollider>(); }
-    }
     private NavMeshAgent nav
     {
         get { return GetComponent<NavMeshAgent>(); }
-    }
-    private BoxCollider attackCol
-    {
-        get { return GetComponentInChildren<BoxCollider>(); }
     }
     private AudioSource source
     {
         get { return GetComponent<AudioSource>(); }
     }
-    private MeshRenderer bodyMesh
-    {
-        get { return transform.FindChild("Body").GetComponent<MeshRenderer>(); }
-    }
 
     // Object Variables
     private State state;
+    private GameObject target;
     private Coroutine hitRoutine;
     private Vector3 initialPoint;
 
@@ -107,7 +100,7 @@ public class Ghoul : AbstractMultiWorld
     {
         if (health >= 0)
         {
-            health --;
+            health--;
             if (health == 0)
             {
                 StopAllCoroutines();
@@ -125,26 +118,52 @@ public class Ghoul : AbstractMultiWorld
                     nav.destination = location;
                 }
             }
-;        }
+        }
+    }
+
+    private void DoAttack()
+    {
+        Collider targetCol = target.GetComponent<Collider>();
+
+        source.pitch = Random.Range(0.95f, 1.05f);
+        source.PlayOneShot(atkSwing);
+
+        if (attackCol.bounds.Intersects(targetCol.bounds))
+            target.SendMessage("TakeDamage", damage);
+    }
+
+    private void EndAttack()
+    {
+        StartCoroutine(AttackCooldown());
+    }
+
+    private IEnumerator AttackCooldown()
+    {
+        yield return new WaitForSeconds(attackCooldown);
+        StartCoroutine(Search(target.transform));
     }
 
     /// <summary>
     /// Continuously chase the target
     /// </summary>
-    /// <param name="target">The target position to chase</param>
+    /// <param name="t">The target position to chase</param>
     /// <param name="targetCol">The targeted collider to chase</param>
-    private IEnumerator Chase(Transform target, Collider targetCol)
+    private IEnumerator Chase(Transform t, Collider targetCol)
     {
         state = State.Chasing;
-        while(state == State.Chasing)
+        while (state == State.Chasing)
         {
-            if (attackCol.bounds.Intersects(targetCol.bounds) && Vector3.Distance(transform.position, target.position) < attackDistance)
-                StartCoroutine(Attack(target.gameObject));
+            if (attackCol.bounds.Intersects(targetCol.bounds) && Vector3.Distance(transform.position, t.position) < attackDistance)
+            {
+                target = t.gameObject;
+                StartCoroutine(Attack());
+            }
             else
             {
                 if (!nav.isOnOffMeshLink)
-                    nav.SetDestination(target.position);
-            } 
+                    nav.SetDestination(t.position);
+            }
+            anim.SetFloat("speed", nav.velocity.magnitude);
             yield return null;
         }
     }
@@ -157,7 +176,7 @@ public class Ghoul : AbstractMultiWorld
     {
         state = State.Searching;
         float time = 0;
-        while(state == State.Searching && time < searchTime)
+        while (state == State.Searching && time < searchTime)
         {
             time += Time.deltaTime;
             if (!nav.isOnOffMeshLink)
@@ -180,8 +199,11 @@ public class Ghoul : AbstractMultiWorld
     {
         state = State.Wandering;
         nav.SetDestination(target);
-        while(state == State.Wandering && Vector3.Distance(transform.position, target) > 0.1f)
+        while (state == State.Wandering && Vector3.Distance(transform.position, target) > 0.1f)
+        {
+            anim.SetFloat("speed", nav.velocity.magnitude);
             yield return null;
+        }
 
         if (state == State.Wandering)
             StartCoroutine(Idle());
@@ -193,6 +215,7 @@ public class Ghoul : AbstractMultiWorld
     private IEnumerator Idle()
     {
         state = State.Idle;
+        anim.SetFloat("speed", 0);
         float time = 0;
         while (state == State.Idle && time < idleTime)
         {
@@ -208,24 +231,13 @@ public class Ghoul : AbstractMultiWorld
     /// Attacks the target
     /// </summary>
     /// <param name="target">The attack target</param>
-    private IEnumerator Attack(GameObject target)
+    private IEnumerator Attack()
     {
         state = State.Attacking;
         nav.destination = transform.position;
-        Collider targetCol = target.GetComponent<Collider>();
-
-        yield return new WaitForSeconds(attackDelay);
-
-        if (state == State.Attacking)
-        {
-            source.pitch = Random.Range(0.95f, 1.05f);
-            source.PlayOneShot(atkSwing);
-
-            if (attackCol.bounds.Intersects(targetCol.bounds))
-                target.SendMessage("TakeDamage", damage);
-            yield return new WaitForSeconds(attackCooldown);
-            StartCoroutine(Search(target.transform));         
-        }
+        anim.SetFloat("speed", 0);
+        anim.SetTrigger("attack");
+        yield return null;
     }
 
     /// <summary>
@@ -236,7 +248,7 @@ public class Ghoul : AbstractMultiWorld
         state = State.Dying;
         Renderer rend = GetComponentInChildren<Renderer>();
         Color color = rend.material.color;
-        while(color.a > 0)
+        while (color.a > 0)
         {
             color.a -= Time.deltaTime;
             rend.material.color = color;
@@ -299,7 +311,7 @@ public class Ghoul : AbstractMultiWorld
     private IEnumerator OnToggleWorlds()
     {
         float time = 0;
-        while(onTransition && time < transitionTime)
+        while (onTransition && time < transitionTime)
         {
             time += Time.deltaTime;
             yield return null;

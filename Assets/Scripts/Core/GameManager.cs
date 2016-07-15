@@ -38,7 +38,8 @@ public class GameManager : MonoBehaviour
             if (this != m_Instance)
                 Destroy(gameObject);
         }
-
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
         //Instantiate(humanPrefab);
     }
 

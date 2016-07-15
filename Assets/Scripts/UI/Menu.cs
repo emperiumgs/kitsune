@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using System.Collections;
 
 public class Menu : MonoBehaviour
@@ -8,7 +9,7 @@ public class Menu : MonoBehaviour
     /// </summary>
     public void NewGame()
     {
-        Application.LoadLevel(2);
+        SceneManager.LoadScene(2);
     }
 
     /// <summary>
