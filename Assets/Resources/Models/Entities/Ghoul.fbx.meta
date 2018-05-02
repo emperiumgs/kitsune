@@ -1,0 +1,318 @@
+fileFormatVersion: 2
+guid: 2f4998ccf6834b84bbac60867895cbdd
+timeCreated: 1467752716
+licenseType: Free
+ModelImporter:
+  serializedVersion: 19
+  fileIDToRecycleName:
+    100000: ghoul:bottomnurbsSquare1
+    100002: ghoul:joint1
+    100004: ghoul:joint10
+    100006: ghoul:joint11
+    100008: ghoul:joint12
+    100010: ghoul:joint13
+    100012: ghoul:joint14
+    100014: ghoul:joint15
+    100016: ghoul:joint16
+    100018: ghoul:joint17
+    100020: ghoul:joint18
+    100022: ghoul:joint19
+    100024: ghoul:joint2
+    100026: ghoul:joint20
+    100028: ghoul:joint26
+    100030: ghoul:joint3
+    100032: ghoul:joint3 1
+    100034: ghoul:joint4
+    100036: ghoul:joint4 1
+    100038: ghoul:joint5
+    100040: ghoul:joint5 1
+    100042: ghoul:joint6
+    100044: ghoul:joint6 1
+    100046: ghoul:joint7
+    100048: ghoul:joint8
+    100050: ghoul:joint9
+    100052: ghoul:polySurface1
+    100054: //RootNode
+    400000: ghoul:bottomnurbsSquare1
+    400002: ghoul:joint1
+    400004: ghoul:joint10
+    400006: ghoul:joint11
+    400008: ghoul:joint12
+    400010: ghoul:joint13
+    400012: ghoul:joint14
+    400014: ghoul:joint15
+    400016: ghoul:joint16
+    400018: ghoul:joint17
+    400020: ghoul:joint18
+    400022: ghoul:joint19
+    400024: ghoul:joint2
+    400026: ghoul:joint20
+    400028: ghoul:joint26
+    400030: ghoul:joint3
+    400032: ghoul:joint3 1
+    400034: ghoul:joint4
+    400036: ghoul:joint4 1
+    400038: ghoul:joint5
+    400040: ghoul:joint5 1
+    400042: ghoul:joint6
+    400044: ghoul:joint6 1
+    400046: ghoul:joint7
+    400048: ghoul:joint8
+    400050: ghoul:joint9
+    400052: ghoul:polySurface1
+    400054: //RootNode
+    4300000: ghoul:polySurface1
+    7400000: Ghoul@Walk
+    7400002: Ghoul@Attack
+    9500000: //RootNode
+    13700000: ghoul:polySurface1
+  materials:
+    importMaterials: 0
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleRotations: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    animationCompression: 3
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations:
+    - serializedVersion: 16
+      name: Ghoul@Walk
+      takeName: Take 001
+      firstFrame: 1
+      lastFrame: 36
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 1
+      loopBlend: 1
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask:
+      - path: 
+        weight: 1
+      - path: ghoul:bottomnurbsSquare1
+        weight: 0
+      - path: ghoul:joint1
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint2
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint2/ghoul:joint3
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint2/ghoul:joint3/ghoul:joint4
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint2/ghoul:joint3/ghoul:joint4/ghoul:joint5
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint2/ghoul:joint3/ghoul:joint4/ghoul:joint5/ghoul:joint6
+        weight: 0
+      - path: ghoul:joint1/ghoul:joint7
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint7/ghoul:joint8
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint7/ghoul:joint8/ghoul:joint9
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint7/ghoul:joint8/ghoul:joint9/ghoul:joint10
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint7/ghoul:joint8/ghoul:joint9/ghoul:joint10/ghoul:joint11
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint7/ghoul:joint8/ghoul:joint9/ghoul:joint10/ghoul:joint11/ghoul:joint12
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint7/ghoul:joint8/ghoul:joint9/ghoul:joint13
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint7/ghoul:joint8/ghoul:joint9/ghoul:joint13/ghoul:joint14
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint7/ghoul:joint8/ghoul:joint9/ghoul:joint13/ghoul:joint14/ghoul:joint15
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint7/ghoul:joint8/ghoul:joint9/ghoul:joint13/ghoul:joint14/ghoul:joint15/ghoul:joint16
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint7/ghoul:joint8/ghoul:joint9/ghoul:joint17
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint7/ghoul:joint8/ghoul:joint9/ghoul:joint17/ghoul:joint18
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint7/ghoul:joint8/ghoul:joint9/ghoul:joint17/ghoul:joint18/ghoul:joint19
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint7/ghoul:joint8/ghoul:joint9/ghoul:joint17/ghoul:joint18/ghoul:joint19/ghoul:joint20
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint26
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint26/ghoul:joint3 1
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint26/ghoul:joint3 1/ghoul:joint4 1
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint26/ghoul:joint3 1/ghoul:joint4 1/ghoul:joint5
+          1
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint26/ghoul:joint3 1/ghoul:joint4 1/ghoul:joint5
+          1/ghoul:joint6 1
+        weight: 0
+      - path: ghoul:polySurface1
+        weight: 0
+      maskType: 0
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0.96
+    - serializedVersion: 16
+      name: Ghoul@Attack
+      takeName: Take 001
+      firstFrame: 38
+      lastFrame: 66
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events:
+      - time: 0.49789026
+        functionName: DoAttack
+        data: 
+        objectReferenceParameter: {instanceID: 0}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
+      - time: 1
+        functionName: EndAttack
+        data: 
+        objectReferenceParameter: {instanceID: 0}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
+      transformMask:
+      - path: 
+        weight: 1
+      - path: ghoul:bottomnurbsSquare1
+        weight: 0
+      - path: ghoul:joint1
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint2
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint2/ghoul:joint3
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint2/ghoul:joint3/ghoul:joint4
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint2/ghoul:joint3/ghoul:joint4/ghoul:joint5
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint2/ghoul:joint3/ghoul:joint4/ghoul:joint5/ghoul:joint6
+        weight: 0
+      - path: ghoul:joint1/ghoul:joint7
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint7/ghoul:joint8
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint7/ghoul:joint8/ghoul:joint9
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint7/ghoul:joint8/ghoul:joint9/ghoul:joint10
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint7/ghoul:joint8/ghoul:joint9/ghoul:joint10/ghoul:joint11
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint7/ghoul:joint8/ghoul:joint9/ghoul:joint10/ghoul:joint11/ghoul:joint12
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint7/ghoul:joint8/ghoul:joint9/ghoul:joint13
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint7/ghoul:joint8/ghoul:joint9/ghoul:joint13/ghoul:joint14
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint7/ghoul:joint8/ghoul:joint9/ghoul:joint13/ghoul:joint14/ghoul:joint15
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint7/ghoul:joint8/ghoul:joint9/ghoul:joint13/ghoul:joint14/ghoul:joint15/ghoul:joint16
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint7/ghoul:joint8/ghoul:joint9/ghoul:joint17
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint7/ghoul:joint8/ghoul:joint9/ghoul:joint17/ghoul:joint18
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint7/ghoul:joint8/ghoul:joint9/ghoul:joint17/ghoul:joint18/ghoul:joint19
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint7/ghoul:joint8/ghoul:joint9/ghoul:joint17/ghoul:joint18/ghoul:joint19/ghoul:joint20
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint26
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint26/ghoul:joint3 1
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint26/ghoul:joint3 1/ghoul:joint4 1
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint26/ghoul:joint3 1/ghoul:joint4 1/ghoul:joint5
+          1
+        weight: 1
+      - path: ghoul:joint1/ghoul:joint26/ghoul:joint3 1/ghoul:joint4 1/ghoul:joint5
+          1/ghoul:joint6 1
+        weight: 0
+      - path: ghoul:polySurface1
+        weight: 0
+      maskType: 0
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0.96
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 7
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 2
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: characters/enemies
+  assetBundleVariant: 

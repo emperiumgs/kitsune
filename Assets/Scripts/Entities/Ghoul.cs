@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-[RequireComponent(typeof(NavMeshAgent))]
+[RequireComponent(typeof(UnityEngine.AI.NavMeshAgent))]
 public class Ghoul : AbstractMultiWorld
 {
     private enum State
@@ -42,9 +42,9 @@ public class Ghoul : AbstractMultiWorld
     public Animator anim;
 
     // Reference Variables
-    private NavMeshAgent nav
+    private UnityEngine.AI.NavMeshAgent nav
     {
-        get { return GetComponent<NavMeshAgent>(); }
+        get { return GetComponent<UnityEngine.AI.NavMeshAgent>(); }
     }
     private AudioSource source
     {
@@ -283,8 +283,8 @@ public class Ghoul : AbstractMultiWorld
         Vector3 randomPlace = UnityEngine.Random.insideUnitSphere * wanderDistance;
         randomPlace += transform.position;
 
-        NavMeshHit navHit;
-        NavMesh.SamplePosition(randomPlace, out navHit, wanderDistance, -1);
+        UnityEngine.AI.NavMeshHit navHit;
+        UnityEngine.AI.NavMesh.SamplePosition(randomPlace, out navHit, wanderDistance, -1);
         return navHit.position;
     }
 

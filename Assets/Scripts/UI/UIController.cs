@@ -22,23 +22,23 @@ public class UIController : MonoBehaviour
     // Reference Variables
     private GameObject gameInterface
     {
-        get { return transform.FindChild("GameInterface").gameObject; }
+        get { return transform.Find("GameInterface").gameObject; }
     }
     private GameObject animInterface
     {
-        get { return transform.FindChild("CinematicInterface").gameObject; }
+        get { return transform.Find("CinematicInterface").gameObject; }
     }
     private Transform health
     {
-        get { return gameInterface.transform.FindChild("Health").FindChild("Fill"); }
+        get { return gameInterface.transform.Find("Health").Find("Fill"); }
     }
     private Image animFader
     {
-        get { return animInterface.transform.FindChild("Fader").GetComponent<Image>(); }
+        get { return animInterface.transform.Find("Fader").GetComponent<Image>(); }
     }
     private Image fader
     {
-        get { return gameInterface.transform.FindChild("Fader").GetComponent<Image>(); }
+        get { return gameInterface.transform.Find("Fader").GetComponent<Image>(); }
     }
 
     // Object Variables

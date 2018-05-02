@@ -145,7 +145,7 @@ public class Player : AbstractMultiWorld
         mesh = shinnoRenderer;
 
         for (int i = 0; i < spiritSlots.Length; i++)
-            spiritSlots[i] = transform.FindChild("SpiritBall" + (i + 1));
+            spiritSlots[i] = transform.Find("SpiritBall" + (i + 1));
     }
 
     /// <summary>

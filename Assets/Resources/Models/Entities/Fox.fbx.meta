@@ -1,0 +1,137 @@
+fileFormatVersion: 2
+guid: 5ec7977fdcb153143a6661390ce708d5
+timeCreated: 1467752717
+licenseType: Free
+ModelImporter:
+  serializedVersion: 19
+  fileIDToRecycleName:
+    100000: //RootNode
+    100002: raposa:joint1
+    100004: raposa:joint10
+    100006: raposa:joint10 1
+    100008: raposa:joint10 2
+    100010: raposa:joint10 3
+    100012: raposa:joint11
+    100014: raposa:joint11 1
+    100016: raposa:joint12
+    100018: raposa:joint13
+    100020: raposa:joint14
+    100022: raposa:joint15
+    100024: raposa:joint16
+    100026: raposa:joint17
+    100028: raposa:joint2
+    100030: raposa:joint22
+    100032: raposa:joint28
+    100034: raposa:joint3
+    100036: raposa:joint4
+    100038: raposa:joint5
+    100040: raposa:joint6
+    100042: raposa:joint7
+    100044: raposa:joint8
+    100046: raposa:joint8 1
+    100048: raposa:joint8 2
+    100050: raposa:joint8 3
+    100052: raposa:joint9
+    100054: raposa:joint9 1
+    100056: raposa:joint9 2
+    100058: raposa:joint9 3
+    100060: raposa:raposa_no_unfold_polySurface1
+    400000: //RootNode
+    400002: raposa:joint1
+    400004: raposa:joint10
+    400006: raposa:joint10 1
+    400008: raposa:joint10 2
+    400010: raposa:joint10 3
+    400012: raposa:joint11
+    400014: raposa:joint11 1
+    400016: raposa:joint12
+    400018: raposa:joint13
+    400020: raposa:joint14
+    400022: raposa:joint15
+    400024: raposa:joint16
+    400026: raposa:joint17
+    400028: raposa:joint2
+    400030: raposa:joint22
+    400032: raposa:joint28
+    400034: raposa:joint3
+    400036: raposa:joint4
+    400038: raposa:joint5
+    400040: raposa:joint6
+    400042: raposa:joint7
+    400044: raposa:joint8
+    400046: raposa:joint8 1
+    400048: raposa:joint8 2
+    400050: raposa:joint8 3
+    400052: raposa:joint9
+    400054: raposa:joint9 1
+    400056: raposa:joint9 2
+    400058: raposa:joint9 3
+    400060: raposa:raposa_no_unfold_polySurface1
+    4300000: raposa:raposa_no_unfold_polySurface1
+    7400000: Take 001
+    9500000: //RootNode
+    13700000: raposa:raposa_no_unfold_polySurface1
+  materials:
+    importMaterials: 0
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleRotations: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    animationCompression: 3
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 14
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+  importAnimation: 0
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 2
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: characters/avatar
+  assetBundleVariant: 

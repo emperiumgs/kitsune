@@ -1,0 +1,290 @@
+fileFormatVersion: 2
+guid: 2d334ad6e379325499472c97e9cd1d73
+timeCreated: 1467931133
+licenseType: Free
+ModelImporter:
+  serializedVersion: 19
+  fileIDToRecycleName:
+    100000: //RootNode
+    100002: shinno:bottomnurbsSquare1
+    100004: shinno:joint1
+    100006: shinno:joint10
+    100008: shinno:joint11
+    100010: shinno:joint12
+    100012: shinno:joint13
+    100014: shinno:joint14
+    100016: shinno:joint14 1
+    100018: shinno:joint15
+    100020: shinno:joint15 1
+    100022: shinno:joint16
+    100024: shinno:joint16 1
+    100026: shinno:joint17
+    100028: shinno:joint17 1
+    100030: shinno:joint2
+    100032: shinno:joint23
+    100034: shinno:joint29
+    100036: shinno:joint3
+    100038: shinno:joint3 1
+    100040: shinno:joint4
+    100042: shinno:joint4 1
+    100044: shinno:joint5
+    100046: shinno:joint5 1
+    100048: shinno:joint6
+    100050: shinno:joint6 1
+    100052: shinno:joint7
+    100054: shinno:joint8
+    100056: shinno:joint9
+    100058: shinno:nurbsCircle1
+    100060: shinno:polySurface3
+    100062: shinno:polySurface4
+    100064: shinno:polySurface5
+    100066: shinno:polySurface5 1
+    100068: shinno:polySurface6
+    100070: shinno:polySurface8
+    100072: shinno:polySurface9
+    100074: shinno:polySurface9 1
+    100076: shinno:transform1
+    100078: shinno:transform2
+    100080: shinno:transform3
+    100082: shinno:transform4
+    100084: shinno:transform5
+    100086: shinno:transform6
+    100088: shinno:transform7
+    400000: //RootNode
+    400002: shinno:bottomnurbsSquare1
+    400004: shinno:joint1
+    400006: shinno:joint10
+    400008: shinno:joint11
+    400010: shinno:joint12
+    400012: shinno:joint13
+    400014: shinno:joint14
+    400016: shinno:joint14 1
+    400018: shinno:joint15
+    400020: shinno:joint15 1
+    400022: shinno:joint16
+    400024: shinno:joint16 1
+    400026: shinno:joint17
+    400028: shinno:joint17 1
+    400030: shinno:joint2
+    400032: shinno:joint23
+    400034: shinno:joint29
+    400036: shinno:joint3
+    400038: shinno:joint3 1
+    400040: shinno:joint4
+    400042: shinno:joint4 1
+    400044: shinno:joint5
+    400046: shinno:joint5 1
+    400048: shinno:joint6
+    400050: shinno:joint6 1
+    400052: shinno:joint7
+    400054: shinno:joint8
+    400056: shinno:joint9
+    400058: shinno:nurbsCircle1
+    400060: shinno:polySurface3
+    400062: shinno:polySurface4
+    400064: shinno:polySurface5
+    400066: shinno:polySurface5 1
+    400068: shinno:polySurface6
+    400070: shinno:polySurface8
+    400072: shinno:polySurface9
+    400074: shinno:polySurface9 1
+    400076: shinno:transform1
+    400078: shinno:transform2
+    400080: shinno:transform3
+    400082: shinno:transform4
+    400084: shinno:transform5
+    400086: shinno:transform6
+    400088: shinno:transform7
+    4300000: shinno:polySurface9
+    7400000: Shinno@Climb
+    9500000: //RootNode
+    13700000: shinno:polySurface9
+  materials:
+    importMaterials: 0
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleRotations: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations:
+    - serializedVersion: 16
+      name: Shinno@Climb
+      takeName: Take 001
+      firstFrame: 15
+      lastFrame: 16
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask:
+      - path: 
+        weight: 1
+      - path: shinno:joint1
+        weight: 1
+      - path: shinno:joint1/shinno:joint2
+        weight: 1
+      - path: shinno:joint1/shinno:joint2/shinno:joint3
+        weight: 1
+      - path: shinno:joint1/shinno:joint2/shinno:joint3/shinno:joint4
+        weight: 1
+      - path: shinno:joint1/shinno:joint2/shinno:joint3/shinno:joint4/shinno:joint5
+        weight: 1
+      - path: shinno:joint1/shinno:joint2/shinno:joint3/shinno:joint4/shinno:joint5/shinno:joint6
+        weight: 1
+      - path: shinno:joint1/shinno:joint7
+        weight: 1
+      - path: shinno:joint1/shinno:joint7/shinno:joint8
+        weight: 1
+      - path: shinno:joint1/shinno:joint7/shinno:joint8/shinno:joint9
+        weight: 1
+      - path: shinno:joint1/shinno:joint7/shinno:joint8/shinno:joint9/shinno:joint10
+        weight: 1
+      - path: shinno:joint1/shinno:joint7/shinno:joint8/shinno:joint9/shinno:joint10/shinno:joint11
+        weight: 1
+      - path: shinno:joint1/shinno:joint7/shinno:joint8/shinno:joint9/shinno:joint10/shinno:joint11/shinno:joint12
+        weight: 1
+      - path: shinno:joint1/shinno:joint7/shinno:joint8/shinno:joint9/shinno:joint13
+        weight: 1
+      - path: shinno:joint1/shinno:joint7/shinno:joint8/shinno:joint9/shinno:joint13/shinno:joint14
+        weight: 1
+      - path: shinno:joint1/shinno:joint7/shinno:joint8/shinno:joint9/shinno:joint13/shinno:joint14/shinno:joint15
+        weight: 1
+      - path: shinno:joint1/shinno:joint7/shinno:joint8/shinno:joint9/shinno:joint13/shinno:joint14/shinno:joint15/shinno:joint16
+        weight: 1
+      - path: shinno:joint1/shinno:joint7/shinno:joint8/shinno:joint9/shinno:joint13/shinno:joint14/shinno:joint15/shinno:joint16/shinno:joint17
+        weight: 1
+      - path: shinno:joint1/shinno:joint7/shinno:joint8/shinno:joint9/shinno:joint23
+        weight: 1
+      - path: shinno:joint1/shinno:joint7/shinno:joint8/shinno:joint9/shinno:joint23/shinno:joint14
+          1
+        weight: 1
+      - path: shinno:joint1/shinno:joint7/shinno:joint8/shinno:joint9/shinno:joint23/shinno:joint14
+          1/shinno:joint15 1
+        weight: 1
+      - path: shinno:joint1/shinno:joint7/shinno:joint8/shinno:joint9/shinno:joint23/shinno:joint14
+          1/shinno:joint15 1/shinno:joint16 1
+        weight: 1
+      - path: shinno:joint1/shinno:joint7/shinno:joint8/shinno:joint9/shinno:joint23/shinno:joint14
+          1/shinno:joint15 1/shinno:joint16 1/shinno:joint17 1
+        weight: 1
+      - path: shinno:joint1/shinno:joint29
+        weight: 1
+      - path: shinno:joint1/shinno:joint29/shinno:joint3 1
+        weight: 1
+      - path: shinno:joint1/shinno:joint29/shinno:joint3 1/shinno:joint4 1
+        weight: 1
+      - path: shinno:joint1/shinno:joint29/shinno:joint3 1/shinno:joint4 1/shinno:joint5
+          1
+        weight: 1
+      - path: shinno:joint1/shinno:joint29/shinno:joint3 1/shinno:joint4 1/shinno:joint5
+          1/shinno:joint6 1
+        weight: 1
+      - path: shinno:nurbsCircle1
+        weight: 1
+      - path: shinno:nurbsCircle1/shinno:bottomnurbsSquare1
+        weight: 1
+      - path: shinno:polySurface3
+        weight: 1
+      - path: shinno:polySurface3/shinno:polySurface5 1
+        weight: 1
+      - path: shinno:polySurface3/shinno:polySurface5 1/shinno:transform4
+        weight: 1
+      - path: shinno:polySurface3/shinno:polySurface6
+        weight: 1
+      - path: shinno:polySurface3/shinno:polySurface6/shinno:transform3
+        weight: 1
+      - path: shinno:polySurface3/shinno:transform1
+        weight: 1
+      - path: shinno:polySurface4
+        weight: 1
+      - path: shinno:polySurface4/shinno:transform2
+        weight: 1
+      - path: shinno:polySurface5
+        weight: 1
+      - path: shinno:polySurface5/shinno:polySurface8
+        weight: 1
+      - path: shinno:polySurface5/shinno:polySurface8/shinno:transform6
+        weight: 1
+      - path: shinno:polySurface5/shinno:polySurface9 1
+        weight: 1
+      - path: shinno:polySurface5/shinno:polySurface9 1/shinno:transform7
+        weight: 1
+      - path: shinno:polySurface5/shinno:transform5
+        weight: 1
+      - path: shinno:polySurface9
+        weight: 1
+      maskType: 0
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 16
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+  importAnimation: 1
+  copyAvatar: 1
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+  lastHumanDescriptionAvatarSource: {fileID: 9000000, guid: 405174f7627600241976eb507b178cd8,
+    type: 3}
+  animationType: 2
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

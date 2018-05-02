@@ -14,7 +14,7 @@ public class Cinematic : Trigger
     }
     private Camera m_Cam
     {
-        get { return cam == null ? transform.FindChild("Camera").GetComponent<Camera>() : cam; }
+        get { return cam == null ? transform.Find("Camera").GetComponent<Camera>() : cam; }
     }
     private Animator anim
     {
