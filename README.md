@@ -17,5 +17,5 @@ The Monkey Boss divides himself into 3 clones and throws fruits on the player ch
 ## Team
 
 - Game Designer/Artist: Anderson Verissimo
-- Game Developer/Sound Designer: Joao Borks
+- Game Developer/Sound Designer: [Joao Borks](https://github.com/JoaoBorks)
 - 3D Artist: Ronaldo Junior
